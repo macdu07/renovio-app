@@ -105,7 +105,7 @@ Renovio - Control de Renovaciones Web
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              from: 'Renovio <notifications@renovio.app>',
+              from: 'Renovio <notificaciones@updates.maurouix.com>',
               to: notif.toEmail,
               subject: `[Renovio] Renovación de ${notif.serviceType} en ${notif.daysUntil} días`,
               text: emailBody,
