@@ -680,6 +680,22 @@ h3 { font-size: 1.1rem; }
   font-weight: 500;
 }
 
+.domain-link {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  margin-top: 2px;
+  transition: color 0.15s;
+}
+
+.domain-link:hover {
+  color: var(--accent-blue);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-blue);
+}
+
 .svc-type {
   font-family: var(--font-sans);
   font-size: 0.68rem;

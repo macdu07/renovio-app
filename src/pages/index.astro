@@ -17,6 +17,8 @@ const allServices = await db.select({
   currency: services.currency,
   autoRenew: services.autoRenew,
   clientName: clients.companyName,
+  clientDomain: clients.domain,
+  serviceDomain: services.domain,
   contactEmail: contacts.email,
   contactName: contacts.name,
 }).from(services).leftJoin(clients, eq(services.clientId, clients.id)).leftJoin(contacts, eq(clients.contactId, contacts.id));
@@ -82,6 +84,13 @@ function getSparklineColor(days: number): string {
   if (days < 0) return '#b03030';
   if (days <= 15) return '#c8620a';
   return '#2a7a4b';
+}
+
+function getDomain(s: { serviceDomain?: string | null; clientDomain?: string | null }): string | null {
+  const raw = s.serviceDomain || s.clientDomain || null;
+  if (!raw) return null;
+  // Ensure it has a protocol so it opens correctly
+  return raw.startsWith('http') ? raw : `https://${raw}`;
 }
 
 function calcSparklinePct(days: number): number {
@@ -151,9 +160,22 @@ const dateStr = NOW.toLocaleDateString('es-CO', { day: '2-digit', month: 'long',
               const chip = getDaysChip(s.days);
               const pct = calcSparklinePct(s.days);
               const color = getSparklineColor(s.days);
+              const domainUrl = getDomain(s);
+              const domainLabel = (s.serviceDomain || s.clientDomain || '').replace(/^https?:\/\//, '');
               return (
                 <tr onclick={`window.location='/clients/${s.clientId}'`} style="cursor: pointer;">
-                  <td style="padding: 10px 8px">{s.clientName || '—'}</td>
+                  <td style="padding: 10px 8px">
+                    <div>{s.clientName || '—'}</div>
+                    {domainUrl && (
+                      <a
+                        href={domainUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="domain-link"
+                        onclick="event.stopPropagation()"
+                      >{domainLabel}</a>
+                    )}
+                  </td>
                   <td style="padding: 10px 8px"><span class="svc-type">{SVC_LABELS[s.serviceType] || s.serviceType}</span></td>
                   <td style="padding: 10px 8px; color: var(--text-muted)">{s.provider || '—'}</td>
                   <td style="padding: 10px 8px" class="col-mono">{fmtDate(s.expiryDate)}</td>
@@ -191,9 +213,22 @@ const dateStr = NOW.toLocaleDateString('es-CO', { day: '2-digit', month: 'long',
       <tbody>
         {servicesWithDays.sort((a, b) => a.days - b.days).map(s => {
           const stat = getStatusText(s.days);
+          const domainUrl = getDomain(s);
+          const domainLabel = (s.serviceDomain || s.clientDomain || '').replace(/^https?:\/\//, '');
           return (
             <tr onclick={`window.location='/clients/${s.clientId}'`} style="cursor: pointer;">
-              <td style="padding: 10px 8px">{s.clientName || '—'}</td>
+              <td style="padding: 10px 8px">
+                <div>{s.clientName || '—'}</div>
+                {domainUrl && (
+                  <a
+                    href={domainUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="domain-link"
+                    onclick="event.stopPropagation()"
+                  >{domainLabel}</a>
+                )}
+              </td>
               <td style="padding: 10px 8px"><span class="svc-type">{SVC_LABELS[s.serviceType] || s.serviceType}</span></td>
               <td style="padding: 10px 8px" class="col-mono">{fmtDate(s.expiryDate)}</td>
               <td style="padding: 10px 8px" class="col-right">{fmtPrice(s.price, s.currency)}</td>
