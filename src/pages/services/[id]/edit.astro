@@ -1,0 +1,174 @@
+---
+import Layout from '../../../layouts/DocumentLayout.astro';
+import { db } from '../../../db';
+import { services, clients } from '../../../db/schema';
+import { eq } from 'drizzle-orm';
+
+const { id } = Astro.params;
+
+const [service] = await db.select().from(services).where(eq(services.id, id!));
+if (!service) return Astro.redirect('/clients');
+
+const [client] = await db.select({ id: clients.id, companyName: clients.companyName })
+  .from(clients).where(eq(clients.id, service.clientId));
+
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+  const serviceType = formData.get('serviceType')?.toString();
+  const domain = formData.get('domain')?.toString().trim() || null;
+  const provider = formData.get('provider')?.toString().trim() || null;
+  const startDate = formData.get('startDate')?.toString() || null;
+  const expiryDate = formData.get('expiryDate')?.toString();
+  const price = formData.get('price')?.toString();
+  const currency = formData.get('currency')?.toString() || 'COP';
+  const autoRenew = formData.get('autoRenew') === 'on';
+
+  if (!serviceType || !expiryDate) {
+    error = 'El tipo de servicio y la fecha de vencimiento son requeridos.';
+  } else {
+    try {
+      await db.update(services).set({
+        serviceType: serviceType as any,
+        domain,
+        provider,
+        startDate,
+        expiryDate,
+        price: price ? Number(price) : null,
+        currency: currency as any,
+        autoRenew,
+      }).where(eq(services.id, id!));
+
+      return Astro.redirect(`/clients/${service.clientId}`);
+    } catch (e: any) {
+      error = e.message || 'Error al actualizar el servicio.';
+    }
+  }
+}
+
+const SVC_LABELS: Record<string, string> = {
+  hosting: 'Hosting', domain: 'Dominio', ssl: 'SSL',
+  maintenance: 'Mantenimiento', website: 'Sitio Web', email: 'Email',
+};
+---
+
+<Layout title="Editar Servicio — Renovio">
+  <div class="col-narrow">
+    <div class="breadcrumb">
+      <a href="/clients" class="breadcrumb-link">Clientes</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href={`/clients/${client?.id}`} class="breadcrumb-link">{client?.companyName}</a>
+      <span class="breadcrumb-sep">›</span>
+      <span>Editar servicio</span>
+    </div>
+    <div class="page-eyebrow">Edición</div>
+    <h1 class="page-title">Editar servicio</h1>
+    <p class="page-subtitle">{SVC_LABELS[service.serviceType] || service.serviceType} · {client?.companyName}</p>
+
+    {error && <div class="login-error" style="margin-bottom: 1rem;">{error}</div>}
+
+    <form method="POST">
+      <div class="form-field">
+        <label class="form-label" for="serviceType">Tipo de servicio *</label>
+        <select class="form-select" id="serviceType" name="serviceType" required>
+          <option value="hosting"  selected={service.serviceType === 'hosting'}>Hosting</option>
+          <option value="domain"   selected={service.serviceType === 'domain'}>Dominio</option>
+          <option value="ssl"      selected={service.serviceType === 'ssl'}>SSL</option>
+          <option value="email"    selected={service.serviceType === 'email'}>Email</option>
+          <option value="website"  selected={service.serviceType === 'website'}>Sitio Web</option>
+          <option value="maintenance" selected={service.serviceType === 'maintenance'}>Mantenimiento</option>
+        </select>
+      </div>
+
+      <div class="form-field" id="domainField">
+        <label class="form-label" for="domain">Dominio</label>
+        <input class="form-input" type="text" id="domain" name="domain"
+          placeholder="Ej. ejemplo.com" value={service.domain ?? ''} />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="provider">Proveedor</label>
+        <input class="form-input" type="text" id="provider" name="provider"
+          placeholder="Ej. SiteGround, Namecheap, Let's Encrypt…" value={service.provider ?? ''} />
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="startDate">Fecha de inicio</label>
+          <input class="form-input" type="date" id="startDate" name="startDate"
+            value={service.startDate ?? ''} />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="period">Período</label>
+          <select class="form-select" id="period">
+            <option value="">Manual</option>
+            <option value="1">1 mes</option>
+            <option value="6">6 meses</option>
+            <option value="12">1 año</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="expiryDate">Fecha de vencimiento *</label>
+        <input class="form-input" type="date" id="expiryDate" name="expiryDate"
+          value={service.expiryDate} required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="price">Precio</label>
+          <input class="form-input" type="number" id="price" name="price" step="0.01"
+            placeholder="0.00" value={service.price ?? ''} />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="currency">Moneda</label>
+          <select class="form-select" id="currency" name="currency">
+            <option value="COP" selected={service.currency === 'COP'}>COP — Peso colombiano</option>
+            <option value="USD" selected={service.currency === 'USD'}>USD — Dólar estadounidense</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" name="autoRenew" checked={service.autoRenew ?? false} />
+          <span class="form-label" style="text-transform: none; margin-bottom: 0;">Renovación automática</span>
+        </label>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <a href={`/clients/${client?.id}`} class="btn btn-ghost">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</Layout>
+
+<script>
+  const DOMAIN_TYPES = new Set(['hosting', 'domain', 'ssl', 'email', 'website']);
+  const serviceTypeSelect = document.getElementById('serviceType') as HTMLSelectElement;
+  const domainField = document.getElementById('domainField') as HTMLElement;
+  const startDateInput = document.getElementById('startDate') as HTMLInputElement;
+  const periodSelect = document.getElementById('period') as HTMLSelectElement;
+  const expiryDateInput = document.getElementById('expiryDate') as HTMLInputElement;
+
+  function toggleDomainField() {
+    domainField.style.display = DOMAIN_TYPES.has(serviceTypeSelect.value) ? '' : 'none';
+  }
+
+  function calcExpiryDate() {
+    const months = parseInt(periodSelect.value);
+    if (!startDateInput.value || !months) return;
+    const d = new Date(startDateInput.value + 'T00:00:00');
+    d.setMonth(d.getMonth() + months);
+    expiryDateInput.value = d.toISOString().slice(0, 10);
+  }
+
+  serviceTypeSelect.addEventListener('change', toggleDomainField);
+  startDateInput.addEventListener('change', calcExpiryDate);
+  periodSelect.addEventListener('change', calcExpiryDate);
+
+  toggleDomainField();
+</script>

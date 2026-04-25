@@ -1,0 +1,101 @@
+---
+import Layout from '../../../layouts/DocumentLayout.astro';
+import { db } from '../../../db';
+import { clients, contacts } from '../../../db/schema';
+import { eq } from 'drizzle-orm';
+
+const { id } = Astro.params;
+
+const [client] = await db.select().from(clients).where(eq(clients.id, id!));
+if (!client) return Astro.redirect('/clients');
+
+const contact = client.contactId
+  ? (await db.select().from(contacts).where(eq(contacts.id, client.contactId)))[0] ?? null
+  : null;
+
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+  const company = formData.get('company')?.toString().trim();
+  const notes = formData.get('notes')?.toString().trim() || null;
+  const name = formData.get('name')?.toString().trim();
+  const email = formData.get('email')?.toString().trim();
+  const phone = formData.get('phone')?.toString().trim() || null;
+
+  if (!company || !name || !email) {
+    error = 'El nombre de empresa, nombre del contacto y correo son requeridos.';
+  } else {
+    try {
+      await db.update(clients).set({ companyName: company, notes }).where(eq(clients.id, id!));
+
+      if (contact) {
+        await db.update(contacts).set({ name, email, phone }).where(eq(contacts.id, contact.id));
+      }
+
+      return Astro.redirect(`/clients/${id}`);
+    } catch (e: any) {
+      error = e.message || 'Error al actualizar el cliente.';
+    }
+  }
+}
+---
+
+<Layout title="Editar Cliente — Renovio">
+  <div class="col-narrow">
+    <div class="breadcrumb">
+      <a href="/clients" class="breadcrumb-link">Clientes</a>
+      <span class="breadcrumb-sep">›</span>
+      <a href={`/clients/${id}`} class="breadcrumb-link">{client.companyName}</a>
+      <span class="breadcrumb-sep">›</span>
+      <span>Editar</span>
+    </div>
+    <div class="page-eyebrow">Edición</div>
+    <h1 class="page-title">Editar cliente</h1>
+    <p class="page-subtitle">Modifique los datos de la empresa y su contacto principal.</p>
+
+    {error && <div class="login-error" style="margin-bottom: 1rem;">{error}</div>}
+
+    <form method="POST">
+      <div class="form-section-title">Empresa</div>
+
+      <div class="form-field">
+        <label class="form-label" for="company">Nombre de la empresa *</label>
+        <input class="form-input" type="text" id="company" name="company"
+          value={client.companyName} required />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="notes">Notas internas</label>
+        <input class="form-input" type="text" id="notes" name="notes"
+          placeholder="Contexto del cliente…" value={client.notes ?? ''} />
+      </div>
+
+      <div class="form-section-title">Contacto principal</div>
+
+      <div class="form-field">
+        <label class="form-label" for="name">Nombre completo *</label>
+        <input class="form-input" type="text" id="name" name="name"
+          value={contact?.name ?? ''} required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="email">Correo *</label>
+          <input class="form-input" type="email" id="email" name="email"
+            value={contact?.email ?? ''} required />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="phone">Teléfono</label>
+          <input class="form-input" type="text" id="phone" name="phone"
+            placeholder="+57 300 000 0000" value={contact?.phone ?? ''} />
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <a href={`/clients/${id}`} class="btn btn-ghost">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</Layout>
