@@ -1,25 +1,13 @@
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
+import { getEnvVar } from '../lib/env';
 
-export async function getDb() {
-  let dbUrl: string | undefined;
-
-  // Astro v6 + Cloudflare: read from cloudflare:workers env
-  try {
-    // @ts-ignore
-    const { env } = await import('cloudflare:workers');
-    dbUrl = env?.DATABASE_URL;
-  } catch (e) {
-    // Not in Cloudflare runtime
-  }
-
-  // Fallback: local dev via Vite
-  if (!dbUrl) {
-    try {
-      dbUrl = import.meta.env.DATABASE_URL;
-    } catch (e) {}
-  }
+// Pass the Astro context (or API context) so getEnvVar can read from
+// context.locals.runtime.env in Cloudflare, or import.meta.env in local dev.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getDb(context: any) {
+  const dbUrl = getEnvVar(context, 'DATABASE_URL');
 
   if (!dbUrl) {
     throw new Error('DATABASE_URL not set');

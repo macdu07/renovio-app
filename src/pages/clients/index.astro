@@ -9,7 +9,7 @@ let allServices: any[] = [];
 let pageError = '';
 
 try {
-  const db = await getDb();
+  const db = getDb(Astro);
 
   allClients = await db.select({
     id: clients.id,
