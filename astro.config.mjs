@@ -20,8 +20,8 @@ export default defineConfig({
         name: "Renovio",
         short_name: "Renovio",
         description: "Control de renovaciones web",
-        theme_color: "#fafbfc",
-        background_color: "#fafbfc",
+        theme_color: "#111214",
+        background_color: "#111214",
         display: "standalone",
         icons: [
           {
