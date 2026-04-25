@@ -24,6 +24,7 @@ export const services = pgTable('services', {
   id: uuid('id').primaryKey().defaultRandom(),
   clientId: uuid('client_id').references(() => clients.id).notNull(),
   serviceType: serviceTypeEnum('service_type').notNull(),
+  domain: text('domain'),
   provider: text('provider'),
   startDate: date('start_date'),
   expiryDate: date('expiry_date').notNull(),

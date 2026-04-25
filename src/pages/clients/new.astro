@@ -8,7 +8,6 @@ let error = '';
 if (Astro.request.method === 'POST') {
   const formData = await Astro.request.formData();
   const company = formData.get('company')?.toString().trim();
-  const domain = formData.get('domain')?.toString().trim();
   const notes = formData.get('notes')?.toString().trim();
   const name = formData.get('name')?.toString().trim();
   const email = formData.get('email')?.toString().trim();
@@ -26,7 +25,6 @@ if (Astro.request.method === 'POST') {
 
       await db.insert(clients).values({
         companyName: company,
-        domain: domain || null,
         notes: notes || null,
         contactId: newContact.id,
       }).returning();
@@ -58,11 +56,6 @@ if (Astro.request.method === 'POST') {
       <div class="form-field">
         <label class="form-label" for="company">Nombre de la empresa *</label>
         <input class="form-input" type="text" id="company" name="company" placeholder="Ej. Geoark Studio" required />
-      </div>
-
-      <div class="form-field">
-        <label class="form-label" for="domain">Dominio principal</label>
-        <input class="form-input" type="text" id="domain" name="domain" placeholder="ejemplo.com" />
       </div>
 
       <div class="form-field">

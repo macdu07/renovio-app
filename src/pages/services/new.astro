@@ -14,6 +14,7 @@ if (Astro.request.method === 'POST') {
   const formData = await Astro.request.formData();
   const clientIdVal = formData.get('clientId')?.toString();
   const serviceType = formData.get('serviceType')?.toString();
+  const domain = formData.get('domain')?.toString().trim() || null;
   const provider = formData.get('provider')?.toString();
   const startDate = formData.get('startDate')?.toString();
   const expiryDate = formData.get('expiryDate')?.toString();
@@ -28,6 +29,7 @@ if (Astro.request.method === 'POST') {
       await db.insert(services).values({
         clientId: clientIdVal,
         serviceType: serviceType as any,
+        domain,
         provider: provider || null,
         startDate: startDate || null,
         expiryDate,
@@ -81,6 +83,11 @@ if (Astro.request.method === 'POST') {
         </select>
       </div>
 
+      <div class="form-field" id="domainField" style="display: none;">
+        <label class="form-label" for="domain">Dominio</label>
+        <input class="form-input" type="text" id="domain" name="domain" placeholder="Ej. ejemplo.com" />
+      </div>
+
       <div class="form-field">
         <label class="form-label" for="provider">Proveedor</label>
         <input class="form-input" type="text" id="provider" name="provider" placeholder="Ej. SiteGround, Namecheap, Let's Encrypt…" />
@@ -125,3 +132,16 @@ if (Astro.request.method === 'POST') {
     </form>
   </div>
 </Layout>
+
+<script>
+  const DOMAIN_TYPES = new Set(['hosting', 'domain', 'ssl', 'email', 'website']);
+  const serviceTypeSelect = document.getElementById('serviceType') as HTMLSelectElement;
+  const domainField = document.getElementById('domainField') as HTMLElement;
+
+  function toggleDomainField() {
+    domainField.style.display = DOMAIN_TYPES.has(serviceTypeSelect.value) ? '' : 'none';
+  }
+
+  serviceTypeSelect.addEventListener('change', toggleDomainField);
+  toggleDomainField();
+</script>

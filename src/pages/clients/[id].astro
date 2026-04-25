@@ -92,10 +92,6 @@ function calcSparklinePct(days: number): number {
         </div>
       )}
       <div class="detail-meta">
-        <div class="meta-item">
-          <div class="meta-key">Dominio</div>
-          <div class="meta-val col-mono">{client?.domain || '—'}</div>
-        </div>
         {contact && (
           <>
             <div class="meta-item">
@@ -130,6 +126,7 @@ function calcSparklinePct(days: number): number {
           <thead>
             <tr>
               <th>Tipo</th>
+              <th>Dominio</th>
               <th>Proveedor</th>
               <th>Inicio</th>
               <th>Vencimiento</th>
@@ -147,6 +144,7 @@ function calcSparklinePct(days: number): number {
               return (
                 <tr>
                   <td style="padding: 10px 8px"><span class="svc-type">{SVC_LABELS[s.serviceType] || s.serviceType}</span></td>
+                  <td style="padding: 10px 8px" class="col-mono">{s.domain || '—'}</td>
                   <td style="padding: 10px 8px; color: var(--text-muted)">{s.provider || '—'}</td>
                   <td style="padding: 10px 8px" class="col-mono">{fmtDate(s.startDate)}</td>
                   <td style="padding: 10px 8px" class="col-mono">{fmtDate(s.expiryDate)}</td>
