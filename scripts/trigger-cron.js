@@ -1,4 +1,4 @@
-const http = require('http');
+import http from 'node:http';
 
 // Configurar los parámetros basándonos en las variables de entorno
 const port = process.env.PORT || process.env.HOST_PORT || 4321;
