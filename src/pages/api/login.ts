@@ -13,7 +13,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect('/login?error=Correo+y+contraseña+requeridos');
   }
 
-  const dbUrl = process.env.DATABASE_URL;
+  const dbUrl = process.env.DATABASE_URL || (import.meta as any).env?.DATABASE_URL;
 
   if (!dbUrl) {
     return redirect('/login?error=Error+de+conexión+a+la+base+de+datos');

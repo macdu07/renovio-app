@@ -12,7 +12,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const formData = await request.formData();
   const action = formData.get('action')?.toString();
 
-  const dbUrl = process.env.DATABASE_URL;
+  const dbUrl = process.env.DATABASE_URL || (import.meta as any).env?.DATABASE_URL;
 
   if (!dbUrl) {
     return redirect('/login?error=Error+de+conexión+a+la+base+de+datos');
