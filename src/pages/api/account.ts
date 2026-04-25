@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { neon } from '@neondatabase/serverless';
+import { DATABASE_URL } from 'astro:env/server';
 import { hashPassword } from '../../lib/auth';
 
 export const POST: APIRoute = async (context) => {
@@ -13,11 +14,11 @@ export const POST: APIRoute = async (context) => {
   const formData = await request.formData();
   const action = formData.get('action')?.toString();
 
-  if (!import.meta.env.DATABASE_URL) {
-    return redirect('/account?error=Error+de+conexión');
+  if (!DATABASE_URL) {
+    return redirect('/login?error=Error+de+conexión+a+la+base+de+datos');
   }
 
-  const sql = neon(import.meta.env.DATABASE_URL);
+  const sql = neon(DATABASE_URL);
 
   try {
     if (action === 'profile') {

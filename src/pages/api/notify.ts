@@ -3,10 +3,11 @@ import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import { services, clients, contacts, notificationLogs } from '../../db/schema';
 import { sql } from 'drizzle-orm';
+import { DATABASE_URL, SESSION_SECRET, RESEND_API_KEY } from 'astro:env/server';
 
 export const POST: APIRoute = async ({ request }) => {
   const secret = request.headers.get('X-Cron-Secret');
-  if (secret !== import.meta.env.SESSION_SECRET) {
+  if (secret !== SESSION_SECRET) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' }
@@ -14,7 +15,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const sqlConnection = neon(import.meta.env.DATABASE_URL);
+    const sqlConnection = neon(DATABASE_URL);
     const db = drizzle(sqlConnection);
 
     const now = new Date();
@@ -92,11 +93,11 @@ Renovio - Control de Renovaciones Web
 
       try {
         let success = false;
-        if (import.meta.env.RESEND_API_KEY) {
+        if (RESEND_API_KEY) {
           const resendResponse = await fetch('https://api.resend.com/emails', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${import.meta.env.RESEND_API_KEY}`,
+              'Authorization': `Bearer ${RESEND_API_KEY}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
