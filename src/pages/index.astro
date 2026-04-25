@@ -1,6 +1,8 @@
 ---
 import Layout from '../layouts/DocumentLayout.astro';
-import { db } from '../db';
+import { getDb } from '../db';
+
+const db = getDb(Astro);
 import { services, clients, contacts } from '../db/schema';
 import { eq, sql } from 'drizzle-orm';
 

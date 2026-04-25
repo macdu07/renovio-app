@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { neon } from '@neondatabase/serverless';
 import { verifyPassword } from '../../lib/auth';
-import { DATABASE_URL } from 'astro:env/server';
+import { getEnvVar } from '../../lib/env';
 
 export const POST: APIRoute = async (context) => {
   const { request, cookies, redirect } = context;
@@ -14,11 +14,12 @@ export const POST: APIRoute = async (context) => {
     return redirect('/login?error=Correo+y+contraseña+requeridos');
   }
 
-  if (!DATABASE_URL) {
+  const dbUrl = getEnvVar(context, 'DATABASE_URL');
+  if (!dbUrl) {
     return redirect('/login?error=Error+de+conexión+a+la+base+de+datos');
   }
 
-  const sql = neon(DATABASE_URL);
+  const sql = neon(dbUrl);
 
   const result = await sql`SELECT * FROM users WHERE email = ${email} LIMIT 1`;
 

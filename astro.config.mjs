@@ -1,15 +1,8 @@
-import { defineConfig, envField } from "astro/config";
+import { defineConfig } from "astro/config";
 import cloudflare from "@astrojs/cloudflare";
 import AstroPWA from "@vite-pwa/astro";
 
 export default defineConfig({
-  env: {
-    schema: {
-      DATABASE_URL: envField.string({ context: "server", access: "secret" }),
-      SESSION_SECRET: envField.string({ context: "server", access: "secret" }),
-      RESEND_API_KEY: envField.string({ context: "server", access: "secret", optional: true }),
-    },
-  },
   adapter: cloudflare({
     platformProxy: {
       enabled: true,

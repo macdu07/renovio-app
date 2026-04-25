@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/DocumentLayout.astro';
 import { neon } from '@neondatabase/serverless';
-import { DATABASE_URL } from 'astro:env/server';
+import { getEnvVar } from '../lib/env';
 
 const session = Astro.cookies.get('session')?.value;
 if (!session) return Astro.redirect('/login');
@@ -10,8 +10,9 @@ const userId = session.replace('user-', '');
 
 let user = { name: '', email: '' };
 
-if (DATABASE_URL) {
-  const sql = neon(DATABASE_URL);
+const dbUrl = getEnvVar(Astro, 'DATABASE_URL');
+if (dbUrl) {
+  const sql = neon(dbUrl);
   const result = await sql`SELECT name, email FROM users WHERE id = ${userId} LIMIT 1`;
   if (result.length > 0) {
     user = result[0] as typeof user;
