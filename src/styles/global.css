@@ -167,6 +167,16 @@ h3 { font-size: 1.1rem; }
   color: var(--text-muted);
 }
 
+.nav-user--link {
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.nav-user--link:hover {
+  color: var(--text-main);
+  text-decoration: none;
+}
+
 .nav-logout {
   font-family: var(--font-sans);
   font-size: 0.78rem;
