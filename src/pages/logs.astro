@@ -1,23 +1,30 @@
 ---
 import Layout from '../layouts/DocumentLayout.astro';
 import { getDb } from '../db';
-
-const db = await getDb();
 import { notificationLogs, services, clients } from '../db/schema';
 import { eq, desc } from 'drizzle-orm';
 
-const allLogs = await db.select({
-  id: notificationLogs.id,
-  sentAt: notificationLogs.sentAt,
-  type: notificationLogs.type,
-  status: notificationLogs.status,
-  serviceType: services.serviceType,
-  clientId: clients.id,
-  clientName: clients.companyName,
-}).from(notificationLogs)
-  .leftJoin(services, eq(notificationLogs.serviceId, services.id))
-  .leftJoin(clients, eq(services.clientId, clients.id))
-  .orderBy(desc(notificationLogs.sentAt));
+let allLogs: any[] = [];
+let pageError = '';
+
+try {
+  const db = await getDb();
+
+  allLogs = await db.select({
+    id: notificationLogs.id,
+    sentAt: notificationLogs.sentAt,
+    type: notificationLogs.type,
+    status: notificationLogs.status,
+    serviceType: services.serviceType,
+    clientId: clients.id,
+    clientName: clients.companyName,
+  }).from(notificationLogs)
+    .leftJoin(services, eq(notificationLogs.serviceId, services.id))
+    .leftJoin(clients, eq(services.clientId, clients.id))
+    .orderBy(desc(notificationLogs.sentAt));
+} catch (err: any) {
+  pageError = String(err.message || err);
+}
 
 const totalCount = allLogs.length;
 const sentCount  = allLogs.filter(l => l.status === 'sent').length;
@@ -51,6 +58,12 @@ function fmtDateTime(d: Date | null): string {
     <div class="page-eyebrow">Historial</div>
     <h1 class="page-title">Notificaciones</h1>
     <p class="page-subtitle">{totalCount} alertas de renovación registradas.</p>
+
+    {pageError && (
+      <div style="background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+        <strong>Error:</strong> {pageError}
+      </div>
+    )}
 
     <div class="summary-strip">
       <div class="summary-item">

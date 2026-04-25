@@ -1,25 +1,33 @@
 ---
 import Layout from '../../layouts/DocumentLayout.astro';
 import { getDb } from '../../db';
-
-const db = await getDb();
 import { clients, services, contacts } from '../../db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
-const allClients = await db.select({
-  id: clients.id,
-  companyName: clients.companyName,
-  domain: clients.domain,
-  notes: clients.notes,
-  contactName: contacts.name,
-  contactEmail: contacts.email,
-}).from(clients).leftJoin(contacts, eq(clients.contactId, contacts.id));
+let allClients: any[] = [];
+let allServices: any[] = [];
+let pageError = '';
 
-const allServices = await db.select({
-  id: services.id,
-  clientId: services.clientId,
-  expiryDate: services.expiryDate,
-}).from(services);
+try {
+  const db = await getDb();
+
+  allClients = await db.select({
+    id: clients.id,
+    companyName: clients.companyName,
+    domain: clients.domain,
+    notes: clients.notes,
+    contactName: contacts.name,
+    contactEmail: contacts.email,
+  }).from(clients).leftJoin(contacts, eq(clients.contactId, contacts.id));
+
+  allServices = await db.select({
+    id: services.id,
+    clientId: services.clientId,
+    expiryDate: services.expiryDate,
+  }).from(services);
+} catch (err: any) {
+  pageError = String(err.message || err);
+}
 
 const NOW = new Date();
 function daysUntil(dateStr: string | Date | null): number {
@@ -42,6 +50,12 @@ const clientServiceSummary = allClients.map(c => {
       <a href="/clients/new" class="btn btn-primary" style="margin-top: 0.5rem;">+ Nuevo cliente</a>
     </div>
     <p class="page-subtitle">{allClients.length} clientes registrados en la base de datos.</p>
+
+    {pageError && (
+      <div style="background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+        <strong>Error:</strong> {pageError}
+      </div>
+    )}
 
     <div class="search-wrap">
       <input class="search-input" id="searchInput" placeholder="Buscar por empresa o dominio…" type="text" />
