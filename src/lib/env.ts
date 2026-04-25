@@ -1,21 +1,25 @@
-// Astro v6 + Cloudflare: use 'cloudflare:workers' for runtime env access.
-// In local dev, Vite exposes vars via import.meta.env as fallback.
-export async function getEnvVar(key: string): Promise<string | undefined> {
-  // 1. Try Cloudflare Workers env (production)
-  try {
-    // @ts-ignore - cloudflare:workers is only available in Cloudflare runtime
-    const { env } = await import('cloudflare:workers');
-    if (env && env[key]) return env[key];
-  } catch (e) {
-    // Not in Cloudflare runtime, fall through
-  }
+// Astro v6 + Cloudflare: reads env vars from Cloudflare Workers runtime first,
+// then falls back to Vite's import.meta.env for local dev.
+//
+// Usage:
+//   In .astro pages:     getEnvVar(Astro, 'KEY')
+//   In API routes:       getEnvVar(context, 'KEY')
 
-  // 2. Fallback: Vite / local dev
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getEnvVar(context: any, key: string): string | undefined {
+  // 1. Cloudflare Workers runtime (production / CF Pages preview)
+  //    The adapter's .env getter throws outside the CF runtime, so we must try/catch.
+  try {
+    const cfEnv = context?.locals?.runtime?.env;
+    if (cfEnv && cfEnv[key]) return cfEnv[key];
+  } catch (_) {}
+
+  // 2. Vite / local dev
   try {
     if (import.meta.env && import.meta.env[key]) {
       return import.meta.env[key];
     }
-  } catch (e) {}
+  } catch (_) {}
 
   return undefined;
 }
