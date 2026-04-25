@@ -858,22 +858,84 @@ h3 { font-size: 1.1rem; }
 [data-theme="dark"] .icon-moon { display: none; }
 
 
+/* ── Responsive ──────────────────────────────────────── */
+
 @media (max-width: 768px) {
-  :root {
-    --col-width: 100%;
-  }
 
-  .main {
-    padding: 1.5rem 0 3rem;
-  }
-
+  /* Layout */
   .col, .col-narrow {
     padding: 0 1rem;
   }
 
+  .main {
+    padding: 1.25rem 0 3rem;
+  }
+
+  /* ── Navigation ── */
+  .nav-inner {
+    padding: 0 1rem;
+    height: auto;
+    min-height: 52px;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .nav-logo {
+    margin-right: auto;
+    padding: 14px 0;
+  }
+
+  /* Stack nav links below logo row */
+  .nav-links {
+    order: 3;
+    width: 100%;
+    border-top: 1px solid var(--border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .nav-links::-webkit-scrollbar { display: none; }
+
+  .nav-link {
+    height: 40px;
+    padding: 0 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .nav-right {
+    gap: 0.6rem;
+    padding: 10px 0;
+  }
+
+  /* Hide "Mi cuenta" text on very small screens, keep icon logic */
+  .nav-user--link {
+    font-size: 0.72rem;
+  }
+
+  /* ── Page header ── */
+  .page-title {
+    font-size: 1.35rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.82rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .narrative {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+  }
+
+  /* ── Summary strip ── */
   .summary-strip {
     flex-wrap: wrap;
     gap: 0;
+    padding: 0.75rem 0;
   }
 
   .summary-item {
@@ -881,18 +943,128 @@ h3 { font-size: 1.1rem; }
     border-right: none;
     margin-right: 0;
     padding-right: 0;
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
+    padding: 0.75rem 0;
     border-bottom: 1px solid var(--border);
   }
 
-  .summary-item:last-child {
+  .summary-item:nth-child(odd) {
+    padding-right: 1rem;
+    border-right: 1px solid var(--border);
+  }
+
+  .summary-item:last-child,
+  .summary-item:nth-last-child(-n+2):nth-child(odd):last-child {
     border-bottom: none;
-    margin-bottom: 0;
+  }
+
+  /* Remove bottom border from last two items */
+  .summary-strip .summary-item:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
+
+  .summary-num {
+    font-size: 1.35rem;
+  }
+
+  /* ── Tables: horizontal scroll ── */
+  .data-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    margin: 1rem 0;
+    /* Add right-edge fade hint */
+    mask-image: linear-gradient(to right, black 90%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
+  }
+
+  .data-table thead th,
+  .data-table tbody td {
+    padding: 8px 10px;
+  }
+
+  /* ── Section header ── */
+  .section-head {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* ── Forms ── */
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  /* ── Overlay / modal ── */
+  .overlay-bg {
+    padding: 1rem;
+    align-items: flex-end;
+  }
+
+  .overlay-box {
+    padding: 1.75rem 1.25rem;
+    max-width: 100%;
+    border-radius: 4px 4px 0 0;
+  }
+
+  /* ── Breadcrumb ── */
+  .breadcrumb {
+    margin-bottom: 1.25rem;
+    font-size: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     padding-bottom: 0;
   }
 
-  .form-row {
-    grid-template-columns: 1fr;
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    padding: 0.6rem 0.75rem;
+  }
+
+  /* ── Detail meta ── */
+  .detail-meta {
+    gap: 1rem;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    bottom: 1rem;
+    width: calc(100% - 2rem);
+    text-align: center;
+  }
+
+  /* ── Rule spacing ── */
+  .rule {
+    margin: 1.5rem 0;
+  }
+}
+
+/* Extra small: phones < 400px */
+@media (max-width: 400px) {
+  .nav-right .nav-user--link {
+    display: none; /* hide "Mi cuenta" text, keep logout & toggle */
+  }
+
+  .summary-item {
+    flex: 0 0 100%;
+    border-right: none !important;
+    padding-right: 0 !important;
+  }
+
+  .summary-strip .summary-item:nth-last-child(-n+2) {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .summary-strip .summary-item:last-child {
+    border-bottom: none;
   }
 }
