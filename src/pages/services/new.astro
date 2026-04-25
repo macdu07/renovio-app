@@ -99,9 +99,19 @@ if (Astro.request.method === 'POST') {
           <input class="form-input" type="date" id="startDate" name="startDate" />
         </div>
         <div class="form-field">
-          <label class="form-label" for="expiryDate">Fecha de vencimiento *</label>
-          <input class="form-input" type="date" id="expiryDate" name="expiryDate" required />
+          <label class="form-label" for="period">Período</label>
+          <select class="form-select" id="period">
+            <option value="">Manual</option>
+            <option value="1">1 mes</option>
+            <option value="6">6 meses</option>
+            <option value="12">1 año</option>
+          </select>
         </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="expiryDate">Fecha de vencimiento *</label>
+        <input class="form-input" type="date" id="expiryDate" name="expiryDate" required />
       </div>
 
       <div class="form-row">
@@ -137,11 +147,25 @@ if (Astro.request.method === 'POST') {
   const DOMAIN_TYPES = new Set(['hosting', 'domain', 'ssl', 'email', 'website']);
   const serviceTypeSelect = document.getElementById('serviceType') as HTMLSelectElement;
   const domainField = document.getElementById('domainField') as HTMLElement;
+  const startDateInput = document.getElementById('startDate') as HTMLInputElement;
+  const periodSelect = document.getElementById('period') as HTMLSelectElement;
+  const expiryDateInput = document.getElementById('expiryDate') as HTMLInputElement;
 
   function toggleDomainField() {
     domainField.style.display = DOMAIN_TYPES.has(serviceTypeSelect.value) ? '' : 'none';
   }
 
+  function calcExpiryDate() {
+    const months = parseInt(periodSelect.value);
+    if (!startDateInput.value || !months) return;
+    const d = new Date(startDateInput.value + 'T00:00:00');
+    d.setMonth(d.getMonth() + months);
+    expiryDateInput.value = d.toISOString().slice(0, 10);
+  }
+
   serviceTypeSelect.addEventListener('change', toggleDomainField);
+  startDateInput.addEventListener('change', calcExpiryDate);
+  periodSelect.addEventListener('change', calcExpiryDate);
+
   toggleDomainField();
 </script>
