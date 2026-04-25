@@ -13,6 +13,26 @@
   --font-serif: 'Lora', 'Georgia', serif;
   --font-sans: 'Inter', system-ui, sans-serif;
   --col-width: 1280px;
+  --nav-bg: rgba(250,251,252,0.95);
+  --overlay-bg-color: rgba(250,251,252,0.85);
+  --overlay-box-bg: #ffffff;
+}
+
+[data-theme="dark"] {
+  --bg-page: #111214;
+  --bg-surface: #1a1c1f;
+  --text-main: rgba(255,255,255,0.88);
+  --text-muted: rgba(255,255,255,0.45);
+  --text-dim: rgba(255,255,255,0.28);
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.15);
+  --accent-blue: #5b8de8;
+  --accent-orange: #e07a30;
+  --accent-red: #d95555;
+  --accent-green: #3da066;
+  --nav-bg: rgba(17,18,20,0.95);
+  --overlay-bg-color: rgba(17,18,20,0.88);
+  --overlay-box-bg: #1a1c1f;
 }
 
 * {
@@ -97,9 +117,10 @@ h3 { font-size: 1.1rem; }
   padding: 0;
   position: sticky;
   top: 0;
-  background: rgba(250,251,252,0.95);
+  background: var(--nav-bg);
   backdrop-filter: blur(8px);
   z-index: 100;
+  transition: background 0.2s;
 }
 
 .nav-inner {
@@ -576,7 +597,7 @@ h3 { font-size: 1.1rem; }
 .overlay-bg {
   position: fixed;
   inset: 0;
-  background: rgba(250,251,252,0.85);
+  background: var(--overlay-bg-color);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -586,7 +607,7 @@ h3 { font-size: 1.1rem; }
 }
 
 .overlay-box {
-  background: #fff;
+  background: var(--overlay-box-bg);
   border: 1px solid var(--border-strong);
   padding: 2.5rem;
   max-width: 400px;
@@ -779,6 +800,46 @@ h3 { font-size: 1.1rem; }
   color: var(--accent-red);
   margin-top: 0.75rem;
 }
+
+/* ── Theme toggle button ─────────────────────────────── */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: none;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  color: var(--text-main);
+  background: rgba(128,128,128,0.08);
+}
+
+.theme-toggle svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: opacity 0.15s;
+}
+
+/* hide/show icons based on theme */
+.icon-sun  { display: none; }
+.icon-moon { display: block; }
+
+[data-theme="dark"] .icon-sun  { display: block; }
+[data-theme="dark"] .icon-moon { display: none; }
 
 
 @media (max-width: 768px) {
