@@ -35,6 +35,10 @@ export const POST: APIRoute = async (context) => {
     .leftJoin(clients, sql`${services.clientId} = ${clients.id}`)
     .leftJoin(contacts, sql`${clients.contactId} = ${contacts.id}`);
 
+    // Get all successfully sent notifications to avoid duplicate emails
+    const sentLogs = await db.select().from(notificationLogs).where(sql`${notificationLogs.status} = 'sent'`);
+    const sentNotifs = new Set(sentLogs.map(log => `${log.serviceId}-${log.type}`));
+
     const notifications: Array<{
       serviceId: string;
       type: string;
@@ -55,7 +59,7 @@ export const POST: APIRoute = async (context) => {
 
       let notificationType: string | null = null;
 
-      if (daysUntil < 0) {
+      if (daysUntil <= 0) {
         notificationType = 'expired';
       } else if (daysUntil <= 7) {
         notificationType = '7d';
@@ -65,7 +69,7 @@ export const POST: APIRoute = async (context) => {
         notificationType = '30d';
       }
 
-      if (notificationType) {
+      if (notificationType && !sentNotifs.has(`${svc.id}-${notificationType}`)) {
         notifications.push({
           serviceId: svc.id,
           type: notificationType,
