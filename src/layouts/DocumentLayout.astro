@@ -60,7 +60,7 @@ function isActive(href: string): boolean {
     {showNav && <nav class="nav" transition:persist>
       <div class="nav-inner">
         <a href="/" class="nav-logo">Renovio</a>
-        <div class="nav-links">
+        <div class="nav-links" id="nav-links">
           {navLinks.map(link => (
             <a
               href={link.href}
@@ -71,7 +71,13 @@ function isActive(href: string): boolean {
           ))}
         </div>
         <div class="nav-right">
-          <a href="/account" class="nav-user nav-user--link">Mi cuenta</a>
+          <a href="/account" class="nav-user nav-user--link" aria-label="Mi cuenta" title="Mi cuenta">
+            <span class="nav-user-text">Mi cuenta</span>
+            <svg class="icon-user" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </a>
           <button
             id="theme-toggle-btn"
             class="theme-toggle"
@@ -98,6 +104,13 @@ function isActive(href: string): boolean {
           <form action="/logout" method="POST" style="display: inline;">
             <button type="submit" class="nav-logout">Salir</button>
           </form>
+          <button id="burger-btn" class="burger-btn" aria-label="Abrir menú" aria-expanded="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-burger">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
         </div>
       </div>
     </nav>}
@@ -142,15 +155,37 @@ function isActive(href: string): boolean {
     });
   }
 
+  function initBurgerMenu() {
+    const btn = document.getElementById('burger-btn');
+    const menu = document.getElementById('nav-links');
+    if (!btn || !menu) return;
+    
+    // Remove old listener to avoid duplicates on client side navigation
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode?.replaceChild(newBtn, btn);
+    
+    newBtn.addEventListener('click', () => {
+      const isExpanded = newBtn.getAttribute('aria-expanded') === 'true';
+      newBtn.setAttribute('aria-expanded', String(!isExpanded));
+      menu.classList.toggle('is-open');
+    });
+  }
+
   // Apply theme BEFORE the DOM swap so there's no flash or reset between pages
   document.addEventListener('astro:before-swap', (e) => {
     applyTheme((e as any).newDocument.documentElement);
+  });
+
+  document.addEventListener('astro:before-preparation', () => {
+    document.getElementById('nav-links')?.classList.remove('is-open');
+    document.getElementById('burger-btn')?.setAttribute('aria-expanded', 'false');
   });
 
   // Runs on first load and after every ClientRouter navigation
   document.addEventListener('astro:page-load', () => {
     updateActiveLink();
     initThemeToggle();
+    initBurgerMenu();
   });
 </script>
 </html>
