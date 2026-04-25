@@ -21,6 +21,7 @@ export const POST: APIRoute = async (context) => {
 
   try {
     if (action === 'profile') {
+      const name = formData.get('name')?.toString().trim() ?? '';
       const email = formData.get('email')?.toString().trim();
 
       if (!email) {
@@ -33,7 +34,7 @@ export const POST: APIRoute = async (context) => {
         return redirect('/account?error=Ese+correo+ya+está+en+uso');
       }
 
-      await sql`UPDATE users SET email = ${email} WHERE id = ${userId}`;
+      await sql`UPDATE users SET name = ${name || null}, email = ${email} WHERE id = ${userId}`;
       return redirect('/account?success=Datos+actualizados');
 
     } else if (action === 'password') {

@@ -7,11 +7,11 @@ if (!session) return Astro.redirect('/login');
 
 const userId = session.replace('user-', '');
 
-let user = { email: '' };
+let user = { name: '', email: '' };
 
 if (import.meta.env.DATABASE_URL) {
   const sql = neon(import.meta.env.DATABASE_URL);
-  const result = await sql`SELECT email FROM users WHERE id = ${userId} LIMIT 1`;
+  const result = await sql`SELECT name, email FROM users WHERE id = ${userId} LIMIT 1`;
   if (result.length > 0) {
     user = result[0] as typeof user;
   }
@@ -26,7 +26,7 @@ const errorMsg = url.searchParams.get('error');
   <div class="col" style="max-width: 560px;">
     <div class="page-eyebrow">Cuenta</div>
     <h1 class="page-title">Configuración</h1>
-    <p class="page-subtitle">Actualiza tu correo y contraseña de acceso.</p>
+    <p class="page-subtitle">Actualiza tu nombre, correo y contraseña de acceso.</p>
 
     {successMsg && (
       <div class="account-alert account-alert--ok" role="alert">
@@ -41,9 +41,21 @@ const errorMsg = url.searchParams.get('error');
 
     <!-- Profile section -->
     <section class="account-section">
-      <div class="form-section-title">Correo electrónico</div>
+      <div class="form-section-title">Perfil</div>
       <form method="POST" action="/api/account" id="form-profile">
         <input type="hidden" name="action" value="profile" />
+        <div class="form-field">
+          <label class="form-label" for="name">Nombre</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            class="form-input"
+            value={user.name ?? ''}
+            placeholder="Tu nombre"
+            autocomplete="name"
+          />
+        </div>
         <div class="form-field">
           <label class="form-label" for="email">Correo</label>
           <input
@@ -57,7 +69,7 @@ const errorMsg = url.searchParams.get('error');
           />
         </div>
         <div class="account-actions">
-          <button type="submit" class="btn btn-primary btn-sm">Guardar correo</button>
+          <button type="submit" class="btn btn-primary btn-sm">Guardar perfil</button>
         </div>
       </form>
     </section>

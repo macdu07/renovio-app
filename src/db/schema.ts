@@ -44,6 +44,7 @@ export const notificationLogs = pgTable('notification_logs', {
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name'),
   email: text('email').unique().notNull(),
   passwordHash: text('password_hash').notNull(),
   role: text('role').default('admin'),
