@@ -17,11 +17,6 @@ let servicesWithDays: any[] = [];
 let pageError = '';
 
 try {
-  // DEBUG: show env state in error message
-  const rt = (Astro.locals as any).runtime;
-  const rtKeys = rt ? Object.keys(rt.env || {}).join(', ') || '(empty)' : 'NO RUNTIME';
-  const metaDb = import.meta.env.DATABASE_URL ? 'SET' : 'NOT SET';
-
   const db = getDb(Astro);
 
   allServices = await db.select({
@@ -65,10 +60,7 @@ try {
                     .sort((a, b) => a.days - b.days);
 
 } catch (err: any) {
-  const rt = (Astro.locals as any).runtime;
-  const rtKeys = rt ? Object.keys(rt.env || {}).join(', ') || '(empty)' : 'NO RUNTIME';
-  const metaDb = import.meta.env.DATABASE_URL ? 'SET' : 'NOT SET';
-  pageError = `${String(err.message || err)} | runtime.env keys: [${rtKeys}] | import.meta.env.DATABASE_URL: ${metaDb}`;
+  pageError = String(err.message || err);
 }
 
 const SVC_LABELS: Record<string, string> = {
