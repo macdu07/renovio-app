@@ -1,52 +1,67 @@
 ---
 import Layout from '../layouts/DocumentLayout.astro';
 import { getDb } from '../db';
-
-const db = getDb(Astro);
 import { services, clients, contacts } from '../db/schema';
 import { eq, sql } from 'drizzle-orm';
 
 const NOW = new Date();
 
-const allServices = await db.select({
-  id: services.id,
-  clientId: services.clientId,
-  serviceType: services.serviceType,
-  provider: services.provider,
-  startDate: services.startDate,
-  expiryDate: services.expiryDate,
-  price: services.price,
-  currency: services.currency,
-  autoRenew: services.autoRenew,
-  clientName: clients.companyName,
-  clientDomain: clients.domain,
-  serviceDomain: services.domain,
-  contactEmail: contacts.email,
-  contactName: contacts.name,
-}).from(services).leftJoin(clients, eq(services.clientId, clients.id)).leftJoin(contacts, eq(clients.contactId, contacts.id));
+let allServices: any[] = [];
+let clientCount = 0;
+let expiredCount = 0;
+let urgentCount = 0;
+let warnCount = 0;
+let okCount = 0;
+let attention: any[] = [];
+let servicesWithDays: any[] = [];
+let pageError = '';
 
-function daysUntil(dateStr: string | Date): number {
-  const d = new Date(dateStr);
-  return Math.round((d.getTime() - NOW.getTime()) / 86400000);
+try {
+  const db = getDb(Astro);
+
+  allServices = await db.select({
+    id: services.id,
+    clientId: services.clientId,
+    serviceType: services.serviceType,
+    provider: services.provider,
+    startDate: services.startDate,
+    expiryDate: services.expiryDate,
+    price: services.price,
+    currency: services.currency,
+    autoRenew: services.autoRenew,
+    clientName: clients.companyName,
+    clientDomain: clients.domain,
+    serviceDomain: services.domain,
+    contactEmail: contacts.email,
+    contactName: contacts.name,
+  }).from(services).leftJoin(clients, eq(services.clientId, clients.id)).leftJoin(contacts, eq(clients.contactId, contacts.id));
+
+  function daysUntil(dateStr: string | Date): number {
+    const d = new Date(dateStr);
+    return Math.round((d.getTime() - NOW.getTime()) / 86400000);
+  }
+
+  servicesWithDays = allServices.map(s => ({
+    ...s,
+    days: daysUntil(s.expiryDate!)
+  }));
+
+  const totalClients = await db.select({ count: sql<number>`count(distinct ${clients.id})` }).from(clients);
+  clientCount = Number(totalClients[0]?.count) || 0;
+
+  expiredCount = servicesWithDays.filter(s => s.days < 0).length;
+  urgentCount  = servicesWithDays.filter(s => s.days >= 0 && s.days <= 7).length;
+  warnCount    = servicesWithDays.filter(s => s.days > 7 && s.days <= 30).length;
+  okCount      = servicesWithDays.filter(s => s.days > 30).length;
+
+  attention = [...servicesWithDays.filter(s => s.days < 0),
+                     ...servicesWithDays.filter(s => s.days >= 0 && s.days <= 7),
+                     ...servicesWithDays.filter(s => s.days > 7 && s.days <= 30)]
+                    .sort((a, b) => a.days - b.days);
+
+} catch (err: any) {
+  pageError = String(err.message || err);
 }
-
-const servicesWithDays = allServices.map(s => ({
-  ...s,
-  days: daysUntil(s.expiryDate!)
-}));
-
-const totalClients = await db.select({ count: sql<number>`count(distinct ${clients.id})` }).from(clients);
-const clientCount = Number(totalClients[0]?.count) || 0;
-
-const expiredCount = servicesWithDays.filter(s => s.days < 0).length;
-const urgentCount  = servicesWithDays.filter(s => s.days >= 0 && s.days <= 7).length;
-const warnCount    = servicesWithDays.filter(s => s.days > 7 && s.days <= 30).length;
-const okCount      = servicesWithDays.filter(s => s.days > 30).length;
-
-const attention = [...servicesWithDays.filter(s => s.days < 0),
-                   ...servicesWithDays.filter(s => s.days >= 0 && s.days <= 7),
-                   ...servicesWithDays.filter(s => s.days > 7 && s.days <= 30)]
-                  .sort((a, b) => a.days - b.days);
 
 const SVC_LABELS: Record<string, string> = {
   hosting: 'Hosting', domain: 'Dominio', ssl: 'SSL',
@@ -109,6 +124,12 @@ const dateStr = NOW.toLocaleDateString('es-CO', { day: '2-digit', month: 'long',
     <div class="page-eyebrow">Panel General — {dateStr}</div>
     <h1 class="page-title">Renovaciones Web</h1>
     <p class="page-subtitle">Reporte automático de vencimientos y actividad reciente.</p>
+
+    {pageError && (
+      <div style="background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+        <strong>Error:</strong> {pageError}
+      </div>
+    )}
 
     <p class="narrative">
       La cartera activa comprende <span class="stat-inline">{clientCount} clientes</span> y <span class="stat-inline">{allServices.length} servicios</span> en seguimiento.
