@@ -1,12 +1,10 @@
 import { defineConfig } from "astro/config";
-import cloudflare from "@astrojs/cloudflare";
+import node from "@astrojs/node";
 import AstroPWA from "@vite-pwa/astro";
 
 export default defineConfig({
-  adapter: cloudflare({
-    platformProxy: {
-      enabled: true,
-    },
+  adapter: node({
+    mode: "standalone",
   }),
   output: "server",
   server: {

@@ -1,18 +1,19 @@
-// Reads env vars from:
-// 1. context.locals.cfEnv  — captured from CF runtime by middleware (production)
-// 2. import.meta.env       — Vite local dev fallback
+// Simple env var reader for Node.js (Coolify / standard server).
+// Reads from process.env (set via Coolify dashboard or .env file).
+// Signature keeps context param for API compatibility (unused in Node).
 //
 // Usage:
 //   In .astro pages:     getEnvVar(Astro, 'KEY')
 //   In API routes:       getEnvVar(context, 'KEY')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getEnvVar(context: any, key: string): string | undefined {
-  // 1. CF runtime env captured by middleware (safe, no throwing getter)
-  const cfEnv = context?.locals?.cfEnv;
-  if (cfEnv && cfEnv[key]) return cfEnv[key];
+export function getEnvVar(_context: any, key: string): string | undefined {
+  // Node.js: process.env is the standard way
+  if (typeof process !== 'undefined' && process.env[key]) {
+    return process.env[key];
+  }
 
-  // 2. Vite / local dev fallback
+  // Vite build-time fallback (local dev with import.meta.env)
   try {
     if (import.meta.env?.[key]) return import.meta.env[key];
   } catch (_) {}

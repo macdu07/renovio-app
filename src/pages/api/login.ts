@@ -2,15 +2,7 @@ import type { APIRoute } from 'astro';
 import { neon } from '@neondatabase/serverless';
 import { verifyPassword } from '../../lib/auth';
 
-async function getCfEnv() {
-  try {
-    // @ts-ignore
-    const { env } = await import('cloudflare:workers');
-    return env;
-  } catch (e) {
-    return import.meta.env;
-  }
-}
+
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const formData = await request.formData();
@@ -21,8 +13,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return redirect('/login?error=Correo+y+contraseña+requeridos');
   }
 
-  const cfEnv = await getCfEnv();
-  const dbUrl = cfEnv?.DATABASE_URL;
+  const dbUrl = process.env.DATABASE_URL;
 
   if (!dbUrl) {
     return redirect('/login?error=Error+de+conexión+a+la+base+de+datos');
