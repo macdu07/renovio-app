@@ -1,0 +1,19 @@
+---
+interface Props {
+  label: string;
+  options: string[];
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const { label, options, value } = Astro.props;
+---
+
+<label>
+  <span class="form-label">{label}</span>
+  <select class="form-select" value={value}>
+    {options.map(opt => (
+      <option value={opt}>{opt}</option>
+    ))}
+  </select>
+</label>

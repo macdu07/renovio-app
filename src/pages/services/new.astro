@@ -1,0 +1,127 @@
+---
+import Layout from '../../layouts/DocumentLayout.astro';
+import { db } from '../../db';
+import { services, clients } from '../../db/schema';
+import { eq } from 'drizzle-orm';
+
+const clientId = Astro.url.searchParams.get('clientId');
+
+const allClients = await db.select({ id: clients.id, companyName: clients.companyName }).from(clients);
+
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+  const clientIdVal = formData.get('clientId')?.toString();
+  const serviceType = formData.get('serviceType')?.toString();
+  const provider = formData.get('provider')?.toString();
+  const startDate = formData.get('startDate')?.toString();
+  const expiryDate = formData.get('expiryDate')?.toString();
+  const price = formData.get('price')?.toString();
+  const currency = formData.get('currency')?.toString() || 'COP';
+  const autoRenew = formData.get('autoRenew') === 'on';
+
+  if (!clientIdVal || !serviceType || !expiryDate) {
+    error = 'Cliente, tipo de servicio y fecha de vencimiento son requeridos.';
+  } else {
+    try {
+      await db.insert(services).values({
+        clientId: clientIdVal,
+        serviceType: serviceType as any,
+        provider: provider || null,
+        startDate: startDate || null,
+        expiryDate,
+        price: price ? Number(price) : null,
+        currency: currency as any,
+        autoRenew,
+      });
+
+      return Astro.redirect(clientIdVal ? `/clients/${clientIdVal}` : '/');
+    } catch (e: any) {
+      error = e.message || 'Error al crear el servicio.';
+    }
+  }
+}
+---
+
+<Layout title="Nuevo Servicio — Renovio">
+  <div class="col-narrow">
+    <div class="breadcrumb">
+      <a href="/clients" class="breadcrumb-link">Clientes</a>
+      <span class="breadcrumb-sep">›</span>
+      <span>Nuevo servicio</span>
+    </div>
+    <div class="page-eyebrow">Registro</div>
+    <h1 class="page-title">Nuevo servicio</h1>
+    <p class="page-subtitle">Registre un nuevo servicio para seguimiento de renovación.</p>
+
+    {error && <div class="login-error" style="margin-bottom: 1rem;">{error}</div>}
+
+    <form method="POST">
+      <div class="form-field">
+        <label class="form-label" for="clientId">Cliente *</label>
+        <select class="form-select" id="clientId" name="clientId" required>
+          <option value="">Seleccionar cliente…</option>
+          {allClients.map(c => (
+            <option value={c.id} selected={clientId === c.id}>{c.companyName}</option>
+          ))}
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="serviceType">Tipo de servicio *</label>
+        <select class="form-select" id="serviceType" name="serviceType" required>
+          <option value="">Seleccionar tipo…</option>
+          <option value="hosting">Hosting</option>
+          <option value="domain">Dominio</option>
+          <option value="ssl">SSL</option>
+          <option value="email">Email</option>
+          <option value="website">Sitio Web</option>
+          <option value="maintenance">Mantenimiento</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="provider">Proveedor</label>
+        <input class="form-input" type="text" id="provider" name="provider" placeholder="Ej. SiteGround, Namecheap, Let's Encrypt…" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="startDate">Fecha de inicio</label>
+          <input class="form-input" type="date" id="startDate" name="startDate" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="expiryDate">Fecha de vencimiento *</label>
+          <input class="form-input" type="date" id="expiryDate" name="expiryDate" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="price">Precio</label>
+          <input class="form-input" type="number" id="price" name="price" step="0.01" placeholder="0.00" />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="currency">Moneda</label>
+          <select class="form-select" id="currency" name="currency">
+            <option value="COP" selected>COP — Peso colombiano</option>
+            <option value="USD">USD — Dólar estadounidense</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" name="autoRenew" />
+          <span class="form-label" style="text-transform: none; margin-bottom: 0;">Renovación automática</span>
+        </label>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+        <button type="submit" class="btn btn-primary">Registrar servicio</button>
+        <a href={clientId ? `/clients/${clientId}` : '/clients'} class="btn btn-ghost">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</Layout>

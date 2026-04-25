@@ -1,0 +1,210 @@
+---
+import Layout from '../layouts/DocumentLayout.astro';
+import { db } from '../db';
+import { services, clients, contacts } from '../db/schema';
+import { eq, sql } from 'drizzle-orm';
+
+const NOW = new Date();
+
+const allServices = await db.select({
+  id: services.id,
+  clientId: services.clientId,
+  serviceType: services.serviceType,
+  provider: services.provider,
+  startDate: services.startDate,
+  expiryDate: services.expiryDate,
+  price: services.price,
+  currency: services.currency,
+  autoRenew: services.autoRenew,
+  clientName: clients.companyName,
+  contactEmail: contacts.email,
+  contactName: contacts.name,
+}).from(services).leftJoin(clients, eq(services.clientId, clients.id)).leftJoin(contacts, eq(clients.contactId, contacts.id));
+
+function daysUntil(dateStr: string | Date): number {
+  const d = new Date(dateStr);
+  return Math.round((d.getTime() - NOW.getTime()) / 86400000);
+}
+
+const servicesWithDays = allServices.map(s => ({
+  ...s,
+  days: daysUntil(s.expiryDate!)
+}));
+
+const totalClients = await db.select({ count: sql<number>`count(distinct ${clients.id})` }).from(clients);
+const clientCount = Number(totalClients[0]?.count) || 0;
+
+const expiredCount = servicesWithDays.filter(s => s.days < 0).length;
+const urgentCount  = servicesWithDays.filter(s => s.days >= 0 && s.days <= 7).length;
+const warnCount    = servicesWithDays.filter(s => s.days > 7 && s.days <= 30).length;
+const okCount      = servicesWithDays.filter(s => s.days > 30).length;
+
+const attention = [...servicesWithDays.filter(s => s.days < 0),
+                   ...servicesWithDays.filter(s => s.days >= 0 && s.days <= 7),
+                   ...servicesWithDays.filter(s => s.days > 7 && s.days <= 30)]
+                  .sort((a, b) => a.days - b.days);
+
+const SVC_LABELS: Record<string, string> = {
+  hosting: 'Hosting', domain: 'Dominio', ssl: 'SSL',
+  maintenance: 'Mantenimiento', website: 'Sitio Web', email: 'Email'
+};
+
+function fmtDate(dateStr: string | Date | null): string {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('es-CO', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+}
+
+function fmtPrice(price: string | number | null, currency: string | null): string {
+  if (!price) return '—';
+  if (currency === 'USD') return `USD $${Number(price).toFixed(2)}`;
+  return `COP $${Number(price).toLocaleString('es-CO')}`;
+}
+
+function getDaysChip(days: number): { cls: string; label: string } {
+  if (days < 0)   return { cls: 'days-expired', label: `Vencido hace ${Math.abs(days)}d` };
+  if (days <= 7)  return { cls: 'days-urgent',  label: `${days}d restantes` };
+  if (days <= 15) return { cls: 'days-warn',    label: `${days}d restantes` };
+  if (days <= 30) return { cls: 'days-warn',    label: `${days}d restantes` };
+  return          { cls: 'days-ok',     label: `${days}d restantes` };
+}
+
+function getStatusText(days: number): { cls: string; label: string } {
+  if (days < 0)   return { cls: 'status-expired', label: 'Vencido' };
+  if (days <= 7)  return { cls: 'status-expired', label: 'Urgente' };
+  if (days <= 15) return { cls: 'status-warn',    label: 'Próximo' };
+  if (days <= 30) return { cls: 'status-soon',    label: 'Este mes' };
+  return          { cls: 'status-ok',     label: 'Vigente' };
+}
+
+function getSparklineColor(days: number): string {
+  if (days < 0) return '#b03030';
+  if (days <= 15) return '#c8620a';
+  return '#2a7a4b';
+}
+
+function calcSparklinePct(days: number): number {
+  const total = 365;
+  const used = Math.min(Math.max(total - days, 0), total);
+  return (used / total) * 100;
+}
+
+const dateStr = NOW.toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+---
+
+<Layout title="Renovio — Informe de Estado">
+  <div class="col">
+    <div class="page-eyebrow">Informe de estado — {dateStr}</div>
+    <h1 class="page-title">Renovaciones Web</h1>
+    <p class="page-subtitle">Reporte automático de vencimientos y actividad reciente.</p>
+
+    <p class="narrative">
+      La cartera activa comprende <span class="stat-inline">{clientCount} clientes</span> y <span class="stat-inline">{allServices.length} servicios</span> en seguimiento.
+      {expiredCount > 0 && <><span class="stat-inline stat-red">{expiredCount} servicio{expiredCount>1?'s':''}</span> {expiredCount > 1 ? 'están vencidos' : 'está vencido'} y requiere{expiredCount>1?'n':''} atención inmediata. </>}
+      {urgentCount > 0 && <><span class="stat-inline stat-red">{urgentCount}</span> vence{urgentCount>1?'n':''} en menos de 7 días. </>}
+      {warnCount > 0 && <><span class="stat-inline stat-orange">{warnCount}</span> adicionale{warnCount>1?'s':''} expira{warnCount>1?'n':''} este mes. </>}
+      {okCount > 0 && <><span class="stat-inline stat-green">{okCount} restantes</span> se encuentran vigentes sin riesgo inmediato.</>}
+    </p>
+
+    <div class="summary-strip">
+      <div class="summary-item">
+        <div class="summary-num">{allServices.length}</div>
+        <div class="summary-label">Servicios totales</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-num" style="color: var(--accent-red)">{expiredCount + urgentCount}</div>
+        <div class="summary-label">Críticos</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-num" style="color: var(--accent-orange)">{warnCount}</div>
+        <div class="summary-label">Próximos 30d</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-num" style="color: var(--accent-green)">{okCount}</div>
+        <div class="summary-label">Vigentes</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-num">{clientCount}</div>
+        <div class="summary-label">Clientes</div>
+      </div>
+    </div>
+
+    {attention.length > 0 && (
+      <>
+        <div class="section-head" style="margin-bottom: 0.5rem">
+          <span class="section-title">Servicios que requieren atención</span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Servicio</th>
+              <th>Proveedor</th>
+              <th>Vencimiento</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {attention.map(s => {
+              const chip = getDaysChip(s.days);
+              const pct = calcSparklinePct(s.days);
+              const color = getSparklineColor(s.days);
+              return (
+                <tr onclick={`window.location='/clients/${s.clientId}'`} style="cursor: pointer;">
+                  <td style="padding: 10px 8px">{s.clientName || '—'}</td>
+                  <td style="padding: 10px 8px"><span class="svc-type">{SVC_LABELS[s.serviceType] || s.serviceType}</span></td>
+                  <td style="padding: 10px 8px; color: var(--text-muted)">{s.provider || '—'}</td>
+                  <td style="padding: 10px 8px" class="col-mono">{fmtDate(s.expiryDate)}</td>
+                  <td style="padding: 10px 8px"><span class={`days-chip ${chip.cls}`}>{chip.label}</span></td>
+                  <td style="padding: 10px 8px">
+                    <svg width="60" height="14" class="sparkline" title={`${Math.round(pct)}% transcurrido`}>
+                      <rect x="0" y="5" width="60" height="4" rx="1" fill="rgba(0,0,0,0.07)" />
+                      <rect x="0" y="5" width={Math.min(pct * 0.6, 60)} height="4" rx="1" fill={color} opacity="0.7" />
+                    </svg>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </>
+    )}
+
+    <hr class="rule" />
+
+    <div class="section-head" style="margin-bottom: 0.5rem">
+      <span class="section-title">Todos los servicios</span>
+      <a href="/services/new" class="btn btn-ghost btn-sm">+ Nuevo servicio</a>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Tipo</th>
+          <th>Vence</th>
+          <th class="col-right">Valor</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {servicesWithDays.sort((a, b) => a.days - b.days).map(s => {
+          const stat = getStatusText(s.days);
+          return (
+            <tr onclick={`window.location='/clients/${s.clientId}'`} style="cursor: pointer;">
+              <td style="padding: 10px 8px">{s.clientName || '—'}</td>
+              <td style="padding: 10px 8px"><span class="svc-type">{SVC_LABELS[s.serviceType] || s.serviceType}</span></td>
+              <td style="padding: 10px 8px" class="col-mono">{fmtDate(s.expiryDate)}</td>
+              <td style="padding: 10px 8px" class="col-right">{fmtPrice(s.price, s.currency)}</td>
+              <td style="padding: 10px 8px"><span class={`status-badge ${stat.cls}`}>{stat.label}</span></td>
+            </tr>
+          );
+        })}
+        {servicesWithDays.length === 0 && (
+          <tr><td colspan="5" class="empty-state" style="padding: 3rem">No hay servicios registrados.</td></tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</Layout>

@@ -1,0 +1,97 @@
+---
+import Layout from '../../layouts/DocumentLayout.astro';
+import { db } from '../../db';
+import { clients, contacts } from '../../db/schema';
+
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const formData = await Astro.request.formData();
+  const company = formData.get('company')?.toString().trim();
+  const domain = formData.get('domain')?.toString().trim();
+  const notes = formData.get('notes')?.toString().trim();
+  const name = formData.get('name')?.toString().trim();
+  const email = formData.get('email')?.toString().trim();
+  const phone = formData.get('phone')?.toString().trim();
+
+  if (!company || !name || !email) {
+    error = 'Los campos nombre de empresa, nombre del contacto y correo son requeridos.';
+  } else {
+    try {
+      const [newContact] = await db.insert(contacts).values({
+        name,
+        email,
+        phone: phone || null,
+      }).returning();
+
+      await db.insert(clients).values({
+        companyName: company,
+        domain: domain || null,
+        notes: notes || null,
+        contactId: newContact.id,
+      }).returning();
+
+      return Astro.redirect('/clients');
+    } catch (e: any) {
+      error = e.message || 'Error al crear el cliente.';
+    }
+  }
+}
+---
+
+<Layout title="Nuevo Cliente — Renovio">
+  <div class="col-narrow">
+    <div class="breadcrumb">
+      <a href="/clients" class="breadcrumb-link">Clientes</a>
+      <span class="breadcrumb-sep">›</span>
+      <span>Nuevo</span>
+    </div>
+    <div class="page-eyebrow">Registro</div>
+    <h1 class="page-title">Nuevo cliente</h1>
+    <p class="page-subtitle">Ingrese los datos de la empresa y su contacto principal.</p>
+
+    {error && <div class="login-error" style="margin-bottom: 1rem;">{error}</div>}
+
+    <form method="POST">
+      <div class="form-section-title">Empresa</div>
+
+      <div class="form-field">
+        <label class="form-label" for="company">Nombre de la empresa *</label>
+        <input class="form-input" type="text" id="company" name="company" placeholder="Ej. Geoark Studio" required />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="domain">Dominio principal</label>
+        <input class="form-input" type="text" id="domain" name="domain" placeholder="ejemplo.com" />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="notes">Notas internas</label>
+        <input class="form-input" type="text" id="notes" name="notes" placeholder="Contexto del cliente…" />
+      </div>
+
+      <div class="form-section-title">Contacto principal</div>
+
+      <div class="form-field">
+        <label class="form-label" for="name">Nombre completo *</label>
+        <input class="form-input" type="text" id="name" name="name" placeholder="Nombre del contacto" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="email">Correo *</label>
+          <input class="form-input" type="email" id="email" name="email" placeholder="correo@empresa.com" required />
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="phone">Teléfono</label>
+          <input class="form-input" type="text" id="phone" name="phone" placeholder="+57 300 000 0000" />
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+        <button type="submit" class="btn btn-primary">Registrar cliente</button>
+        <a href="/clients" class="btn btn-ghost">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</Layout>

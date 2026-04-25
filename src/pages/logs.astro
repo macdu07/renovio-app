@@ -1,0 +1,164 @@
+---
+import Layout from '../layouts/DocumentLayout.astro';
+import { db } from '../db';
+import { notificationLogs, services, clients } from '../db/schema';
+import { eq, desc } from 'drizzle-orm';
+
+const allLogs = await db.select({
+  id: notificationLogs.id,
+  sentAt: notificationLogs.sentAt,
+  type: notificationLogs.type,
+  status: notificationLogs.status,
+  serviceType: services.serviceType,
+  clientId: clients.id,
+  clientName: clients.companyName,
+}).from(notificationLogs)
+  .leftJoin(services, eq(notificationLogs.serviceId, services.id))
+  .leftJoin(clients, eq(services.clientId, clients.id))
+  .orderBy(desc(notificationLogs.sentAt));
+
+const totalCount = allLogs.length;
+const sentCount  = allLogs.filter(l => l.status === 'sent').length;
+const failedCount = allLogs.filter(l => l.status === 'failed').length;
+
+const count30d    = allLogs.filter(l => l.type === '30d').length;
+const count15d    = allLogs.filter(l => l.type === '15d').length;
+const count7d     = allLogs.filter(l => l.type === '7d').length;
+const countExpired = allLogs.filter(l => l.type === 'expired').length;
+
+const SVC_LABELS: Record<string, string> = {
+  hosting: 'Hosting', domain: 'Dominio', ssl: 'SSL',
+  maintenance: 'Mantenimiento', website: 'Sitio Web', email: 'Email',
+};
+
+const TYPE_LABELS: Record<string, string> = {
+  '30d': '30 días', '15d': '15 días', '7d': '7 días', 'expired': 'Vencido',
+};
+
+function fmtDateTime(d: Date | null): string {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('es-CO', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+---
+
+<Layout title="Notificaciones — Renovio">
+  <div class="col">
+    <div class="page-eyebrow">Historial</div>
+    <h1 class="page-title">Notificaciones</h1>
+    <p class="page-subtitle">{totalCount} alertas de renovación registradas.</p>
+
+    <div class="summary-strip">
+      <div class="summary-item">
+        <div class="summary-num">{totalCount}</div>
+        <div class="summary-label">Total</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-num" style="color: var(--accent-green)">{sentCount}</div>
+        <div class="summary-label">Enviadas</div>
+      </div>
+      {failedCount > 0 && (
+        <div class="summary-item">
+          <div class="summary-num" style="color: var(--accent-red)">{failedCount}</div>
+          <div class="summary-label">Fallidas</div>
+        </div>
+      )}
+      <div class="summary-item">
+        <div class="summary-num">{count30d}</div>
+        <div class="summary-label">Aviso 30d</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-num">{count15d}</div>
+        <div class="summary-label">Aviso 15d</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-num">{count7d}</div>
+        <div class="summary-label">Aviso 7d</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-num" style={countExpired > 0 ? 'color: var(--accent-red)' : ''}>{countExpired}</div>
+        <div class="summary-label">Vencidos</div>
+      </div>
+    </div>
+
+    {allLogs.length === 0 ? (
+      <div class="empty-state">Sin notificaciones registradas todavía.</div>
+    ) : (
+      <>
+        <div class="tabs" id="filterTabs">
+          <button class="tab active" data-filter="all">Todas ({totalCount})</button>
+          {count30d > 0    && <button class="tab" data-filter="30d">30 días ({count30d})</button>}
+          {count15d > 0    && <button class="tab" data-filter="15d">15 días ({count15d})</button>}
+          {count7d > 0     && <button class="tab" data-filter="7d">7 días ({count7d})</button>}
+          {countExpired > 0 && <button class="tab" data-filter="expired">Vencidos ({countExpired})</button>}
+          {failedCount > 0 && <button class="tab" data-filter="failed">Fallidas ({failedCount})</button>}
+        </div>
+
+        <table class="data-table" id="logsTable">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Cliente</th>
+              <th>Servicio</th>
+              <th>Alerta</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allLogs.map(l => (
+              <tr data-type={l.type} data-status={l.status}>
+                <td class="col-mono">{fmtDateTime(l.sentAt)}</td>
+                <td>
+                  {l.clientId
+                    ? <a href={`/clients/${l.clientId}`} class="btn-link">{l.clientName}</a>
+                    : <span style="color: var(--text-dim)">—</span>
+                  }
+                </td>
+                <td>
+                  <span class="svc-type">
+                    {SVC_LABELS[l.serviceType ?? ''] ?? l.serviceType ?? '—'}
+                  </span>
+                </td>
+                <td>
+                  <span class={`log-type log-${l.type}`}>
+                    {TYPE_LABELS[l.type ?? ''] ?? l.type ?? '—'}
+                  </span>
+                </td>
+                <td>
+                  <span class={l.status === 'sent' ? 'log-ok' : 'log-fail'}>
+                    {l.status === 'sent' ? '✓ Enviado' : '✗ Error'}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </>
+    )}
+  </div>
+</Layout>
+
+<script>
+  const tabs = document.querySelectorAll<HTMLButtonElement>('#filterTabs .tab');
+  const rows = document.querySelectorAll<HTMLTableRowElement>('#logsTable tbody tr');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      const filter = tab.dataset.filter!;
+      rows.forEach(row => {
+        if (filter === 'all') {
+          row.style.display = '';
+        } else if (filter === 'failed') {
+          row.style.display = row.dataset.status === 'failed' ? '' : 'none';
+        } else {
+          row.style.display = row.dataset.type === filter ? '' : 'none';
+        }
+      });
+    });
+  });
+</script>

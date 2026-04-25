@@ -1,0 +1,215 @@
+---
+import Layout from '../../layouts/DocumentLayout.astro';
+import { db } from '../../db';
+import { clients, contacts, services, notificationLogs } from '../../db/schema';
+import { eq } from 'drizzle-orm';
+
+const { id } = Astro.params;
+
+const [client] = await db.select().from(clients).where(eq(clients.id, id!));
+const contact = client?.contactId
+  ? (await db.select().from(contacts).where(eq(contacts.id, client.contactId)))[0] ?? null
+  : null;
+
+const clientServices = await db.select().from(services).where(eq(services.clientId, id!));
+const logs = await db.select().from(notificationLogs).where(
+  eq(notificationLogs.serviceId, clientServices.map(s => s.id)[0])
+);
+
+const NOW = new Date();
+function daysUntil(dateStr: string | Date | null): number {
+  if (!dateStr) return 999;
+  return Math.round((new Date(dateStr).getTime() - NOW.getTime()) / 86400000);
+}
+
+const servicesWithDays = clientServices.map(s => ({
+  ...s,
+  days: daysUntil(s.expiryDate)
+}));
+
+const SVC_LABELS: Record<string, string> = {
+  hosting: 'Hosting', domain: 'Dominio', ssl: 'SSL',
+  maintenance: 'Mantenimiento', website: 'Sitio Web', email: 'Email'
+};
+
+function fmtDate(dateStr: string | Date | null): string {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('es-CO', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+}
+
+function fmtPrice(price: string | number | null, currency: string | null): string {
+  if (!price) return '—';
+  if (currency === 'USD') return `USD $${Number(price).toFixed(2)}`;
+  return `COP $${Number(price).toLocaleString('es-CO')}`;
+}
+
+function getDaysChip(days: number): { cls: string; label: string } {
+  if (days < 0)   return { cls: 'days-expired', label: `Vencido hace ${Math.abs(days)}d` };
+  if (days <= 7)  return { cls: 'days-urgent',  label: `${days}d restantes` };
+  if (days <= 15) return { cls: 'days-warn',    label: `${days}d restantes` };
+  if (days <= 30) return { cls: 'days-warn',    label: `${days}d restantes` };
+  return          { cls: 'days-ok',     label: `${days}d restantes` };
+}
+
+function getSparklineColor(days: number): string {
+  if (days < 0) return '#b03030';
+  if (days <= 15) return '#c8620a';
+  return '#2a7a4b';
+}
+
+function calcSparklinePct(days: number): number {
+  const total = 365;
+  const used = Math.min(Math.max(total - days, 0), total);
+  return (used / total) * 100;
+}
+---
+
+<Layout title={`${client?.companyName || 'Cliente'} — Renovio`}>
+  <div class="col">
+    <div class="breadcrumb">
+      <a href="/clients" class="breadcrumb-link">Clientes</a>
+      <span class="breadcrumb-sep">›</span>
+      <span>{client?.companyName}</span>
+    </div>
+
+    <div class="detail-header">
+      <div class="page-eyebrow">Ficha de cliente</div>
+      <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+        <h1 class="page-title">{client?.companyName}</h1>
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.4rem;">
+          <a href={`/services/new?clientId=${id}`} class="btn btn-ghost btn-sm">+ Servicio</a>
+          <form method="POST" action={`/clients/${id}/delete`} style="display: inline;">
+            <button type="submit" class="btn btn-danger btn-sm"
+              onclick="return confirm('¿Eliminar cliente y todos sus servicios?')">Eliminar</button>
+          </form>
+        </div>
+      </div>
+      {client?.notes && (
+        <div style="font-family: var(--font-serif); font-size: 0.95rem; color: var(--text-muted); font-style: italic; margin-top: 0.5rem;">
+          {client.notes}
+        </div>
+      )}
+      <div class="detail-meta">
+        <div class="meta-item">
+          <div class="meta-key">Dominio</div>
+          <div class="meta-val col-mono">{client?.domain || '—'}</div>
+        </div>
+        {contact && (
+          <>
+            <div class="meta-item">
+              <div class="meta-key">Contacto</div>
+              <div class="meta-val">{contact.name}</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-key">Correo</div>
+              <div class="meta-val">
+                <a href={`mailto:${contact.email}`}>{contact.email}</a>
+              </div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-key">Teléfono</div>
+              <div class="meta-val">{contact.phone || '—'}</div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="servicesTab">Servicios ({clientServices.length})</button>
+      <button class="tab" id="logsTab">Notificaciones ({logs.length})</button>
+    </div>
+
+    <div id="servicesContent">
+      {clientServices.length === 0 ? (
+        <div class="empty-state">No hay servicios registrados para este cliente.</div>
+      ) : (
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Proveedor</th>
+              <th>Inicio</th>
+              <th>Vencimiento</th>
+              <th class="col-right">Precio</th>
+              <th>Estado</th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {servicesWithDays.sort((a, b) => a.days - b.days).map(s => {
+              const chip = getDaysChip(s.days);
+              const pct = calcSparklinePct(s.days);
+              const color = getSparklineColor(s.days);
+              return (
+                <tr>
+                  <td style="padding: 10px 8px"><span class="svc-type">{SVC_LABELS[s.serviceType] || s.serviceType}</span></td>
+                  <td style="padding: 10px 8px; color: var(--text-muted)">{s.provider || '—'}</td>
+                  <td style="padding: 10px 8px" class="col-mono">{fmtDate(s.startDate)}</td>
+                  <td style="padding: 10px 8px" class="col-mono">{fmtDate(s.expiryDate)}</td>
+                  <td style="padding: 10px 8px" class="col-right">{fmtPrice(s.price, s.currency)}</td>
+                  <td style="padding: 10px 8px"><span class={`days-chip ${chip.cls}`}>{chip.label}</span></td>
+                  <td style="padding: 10px 8px">
+                    <svg width="60" height="14" class="sparkline">
+                      <rect x="0" y="5" width="60" height="4" rx="1" fill="rgba(0,0,0,0.07)" />
+                      <rect x="0" y="5" width={Math.min(pct * 0.6, 60)} height="4" rx="1" fill={color} opacity="0.7" />
+                    </svg>
+                  </td>
+                  <td style="padding: 10px 8px; text-align: right;">
+                    <form method="POST" action={`/services/${s.id}/delete`} style="display: inline;">
+                      <button type="submit" class="btn-link" style="color: var(--text-dim); font-size: 0.72rem;"
+                        onclick="return confirm('¿Eliminar este servicio?')">Eliminar</button>
+                    </form>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
+
+    <div id="logsContent" style="display: none;">
+      {logs.length === 0 ? (
+        <div class="empty-state">Sin notificaciones registradas.</div>
+      ) : (
+        <div>
+          {logs.map(l => (
+            <div class="log-entry">
+              <span class="log-time">{l.sentAt?.toLocaleDateString('es-CO')}</span>
+              <span class={`log-type log-${l.type}`}>{l.type}</span>
+              <span style="flex: 1; color: var(--text-muted);">Servicio</span>
+              <span class={l.status === 'sent' ? 'log-ok' : 'log-fail'}>
+                {l.status === 'sent' ? '✓ Enviado' : '✗ Error'}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const servicesTab = document.getElementById('servicesTab');
+  const logsTab = document.getElementById('logsTab');
+  const servicesContent = document.getElementById('servicesContent');
+  const logsContent = document.getElementById('logsContent');
+
+  servicesTab?.addEventListener('click', () => {
+    servicesTab.classList.add('active');
+    logsTab?.classList.remove('active');
+    servicesContent!.style.display = 'block';
+    logsContent!.style.display = 'none';
+  });
+
+  logsTab?.addEventListener('click', () => {
+    logsTab.classList.add('active');
+    servicesTab?.classList.remove('active');
+    logsContent!.style.display = 'block';
+    servicesContent!.style.display = 'none';
+  });
+</script>

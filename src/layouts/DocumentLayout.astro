@@ -1,0 +1,69 @@
+---
+import '../styles/global.css';
+import ClientRouter from 'astro/components/ClientRouter.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Renovio',
+  description = 'Control de renovaciones web'
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+
+const navLinks = [
+  { href: '/', label: 'Informe' },
+  { href: '/clients', label: 'Clientes' },
+  { href: '/logs', label: 'Notificaciones' },
+];
+
+function isActive(href: string): boolean {
+  if (href === '/') return currentPath === '/';
+  return currentPath.startsWith(href);
+}
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=optional" rel="stylesheet" />
+  <ClientRouter />
+  <title>{title}</title>
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav" transition:persist>
+      <div class="nav-inner">
+        <a href="/" class="nav-logo">Renovio</a>
+        <div class="nav-links">
+          {navLinks.map(link => (
+            <a
+              href={link.href}
+              class:list={['nav-link', { active: isActive(link.href) }]}
+            >
+              {link.label}
+            </a>
+          ))}
+        </div>
+        <div class="nav-right">
+          <span class="nav-user">admin@renovio.app</span>
+          <form action="/logout" method="POST" style="display: inline;">
+            <button type="submit" class="nav-logout">Salir</button>
+          </form>
+        </div>
+      </div>
+    </nav>
+    <main class="main" transition:animate="fade">
+      <slot />
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Renovio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-page: #fafbfc;
+  --bg-surface: #ffffff;
+  --text-main: rgba(0,0,0,0.84);
+  --text-muted: rgba(0,0,0,0.45);
+  --text-dim: rgba(0,0,0,0.28);
+  --border: rgba(0,0,0,0.09);
+  --border-strong: rgba(0,0,0,0.18);
+  --accent-blue: #2c5fa8;
+  --accent-orange: #c8620a;
+  --accent-red: #b03030;
+  --accent-green: #2a7a4b;
+  --font-serif: 'Lora', 'Georgia', serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --col-width: 860px;
+}
+
+html, body, #root { height: 100%; }
+body {
+  background: var(--bg-page);
+  color: var(--text-main);
+  font-family: var(--font-serif);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+/* Typography scale */
+.t-serif-xl  { font-family: var(--font-serif); font-size: 2rem; font-weight: 500; line-height: 1.2; letter-spacing: -0.01em; }
+.t-serif-lg  { font-family: var(--font-serif); font-size: 1.35rem; font-weight: 400; line-height: 1.35; }
+.t-serif-base{ font-family: var(--font-serif); font-size: 1rem; line-height: 1.65; }
+.t-sans-sm   { font-family: var(--font-sans); font-size: 0.78rem; font-weight: 400; }
+.t-sans-base { font-family: var(--font-sans); font-size: 0.875rem; }
+.t-sans-med  { font-family: var(--font-sans); font-size: 0.875rem; font-weight: 500; }
+.t-sans-lg   { font-family: var(--font-sans); font-size: 1.05rem; font-weight: 500; }
+.t-mono      { font-family: 'Courier New', monospace; font-size: 0.8rem; }
+
+/* Layout */
+.page-wrap {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.col {
+  width: 100%;
+  max-width: var(--col-width);
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+.col-narrow {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Dividers */
+.rule { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+.rule-strong { border: none; border-top: 1px solid var(--border-strong); margin: 0; }
+
+/* Nav */
+.nav {
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  background: rgba(250,251,252,0.95);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+}
+.nav-inner {
+  max-width: var(--col-width);
+  margin: 0 auto;
+  padding: 0 2rem;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.nav-logo {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-main);
+  text-decoration: none;
+  cursor: pointer;
+  margin-right: 2.5rem;
+}
+.nav-links {
+  display: flex;
+  gap: 0;
+  flex: 1;
+}
+.nav-link {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 0.85rem;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.nav-link:hover { color: var(--text-main); }
+.nav-link.active { color: var(--text-main); border-bottom-color: var(--text-main); font-weight: 500; }
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+}
+.nav-user {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.nav-logout {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+.nav-logout:hover { color: var(--text-main); text-decoration-color: var(--border-strong); }
+
+/* Main content area */
+.main { flex: 1; padding: 3.5rem 0 5rem; }
+
+/* Headings */
+.page-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.6rem;
+}
+.page-title {
+  font-family: var(--font-serif);
+  font-size: 1.9rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+  margin-bottom: 0.35rem;
+}
+.page-subtitle {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 2.5rem;
+}
+
+/* Stat pills in narrative */
+.stat-inline {
+  display: inline;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.9em;
+}
+.stat-orange { color: var(--accent-orange); }
+.stat-red    { color: var(--accent-red); }
+.stat-green  { color: var(--accent-green); }
+.stat-blue   { color: var(--accent-blue); }
+
+/* Tables — Tufte style */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 0.83rem;
+  margin: 1.5rem 0;
+}
+.data-table thead th {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border-strong);
+  padding: 0 8px 10px;
+  text-align: left;
+}
+.data-table tbody td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  color: var(--text-main);
+}
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.data-table tbody tr:hover td { background: rgba(0,0,0,0.025); }
+.data-table .col-right { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table .col-mono { font-family: 'Courier New', monospace; font-size: 0.78rem; }
+
+/* Status badges — no pill shape, just colored text */
+.status-badge {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 2px 0;
+}
+.status-ok      { color: var(--accent-green); }
+.status-warn    { color: var(--accent-orange); }
+.status-expired { color: var(--accent-red); }
+.status-soon    { color: #8b6914; }
+
+/* Sparkline */
+.sparkline { display: inline-block; vertical-align: middle; }
+
+/* Days remaining indicator */
+.days-chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.days-ok      { background: rgba(42,122,75,0.08);  color: var(--accent-green); }
+.days-warn    { background: rgba(200,98,10,0.09);   color: var(--accent-orange); }
+.days-urgent  { background: rgba(176,48,48,0.09);   color: var(--accent-red); }
+.days-expired { background: rgba(176,48,48,0.12);   color: var(--accent-red); }
+
+/* Buttons */
+.btn {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--text-main);
+  color: var(--bg-page);
+}
+.btn-primary:hover { background: rgba(0,0,0,0.75); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+}
+.btn-ghost:hover { color: var(--text-main); border-color: var(--border-strong); background: rgba(0,0,0,0.03); }
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--accent-blue);
+  padding: 0;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(44,95,168,0.3);
+  transition: text-decoration-color 0.15s;
+}
+.btn-link:hover { text-decoration-color: var(--accent-blue); }
+.btn-sm { padding: 5px 12px; font-size: 0.75rem; }
+.btn-danger { background: rgba(176,48,48,0.08); color: var(--accent-red); border: 1px solid rgba(176,48,48,0.2); }
+.btn-danger:hover { background: rgba(176,48,48,0.14); }
+
+/* Forms */
+.form-field { margin-bottom: 1.5rem; }
+.form-label {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+.form-input {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--text-main);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-strong);
+  padding: 6px 0;
+  outline: none;
+  transition: border-color 0.15s;
+  border-radius: 0;
+}
+.form-input:focus { border-bottom-color: var(--text-main); }
+.form-input::placeholder { color: var(--text-dim); }
+.form-select {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--text-main);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-strong);
+  padding: 6px 0;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+.form-select:focus { border-bottom-color: var(--text-main); }
+.form-hint {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.form-section-title {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin: 2rem 0 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Section headers within page */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  gap: 1rem;
+}
+.section-title {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* Login page */
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-page);
+  padding: 2rem;
+}
+.login-box { width: 100%; max-width: 360px; }
+.login-logo {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 3rem;
+}
+.login-title {
+  font-family: var(--font-serif);
+  font-size: 1.55rem;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  color: var(--text-main);
+}
+.login-sub {
+  font-family: var(--font-serif);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 2.5rem;
+}
+.login-error {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--accent-red);
+  margin-top: 0.75rem;
+}
+
+/* Narrative block */
+.narrative {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--text-main);
+  max-width: 660px;
+  margin-bottom: 2rem;
+}
+
+/* Summary strip */
+.summary-strip {
+  display: flex;
+  gap: 2.5rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2.5rem;
+}
+.summary-item {}
+.summary-num {
+  font-family: var(--font-sans);
+  font-size: 1.6rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 0.2rem;
+}
+.summary-label {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Client detail */
+.detail-header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 2rem;
+  margin-bottom: 2rem;
+}
+.detail-meta {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+.meta-item {}
+.meta-key {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 2px;
+}
+.meta-val {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--text-muted);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+/* Notification log */
+.log-entry {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+}
+.log-time { color: var(--text-dim); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.log-type {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.log-30d { background: rgba(44,95,168,0.08); color: var(--accent-blue); }
+.log-15d { background: rgba(200,98,10,0.09); color: var(--accent-orange); }
+.log-7d  { background: rgba(176,48,48,0.09); color: var(--accent-red); }
+.log-expired { background: rgba(176,48,48,0.14); color: var(--accent-red); }
+.log-ok  { color: var(--accent-green); }
+.log-fail{ color: var(--accent-red); }
+
+/* Tooltip */
+.tooltip-wrap { position: relative; display: inline-block; }
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.82);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  border-radius: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.tooltip-wrap:hover .tooltip { opacity: 1; }
+
+/* Confirm overlay */
+.overlay-bg {
+  position: fixed; inset: 0;
+  background: rgba(250,251,252,0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 2rem;
+}
+.overlay-box {
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  padding: 2.5rem;
+  max-width: 400px;
+  width: 100%;
+}
+.overlay-title {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+}
+.overlay-body {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 1.75rem;
+  line-height: 1.6;
+}
+.overlay-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-main);
+  color: var(--bg-page);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  padding: 10px 20px;
+  border-radius: 3px;
+  z-index: 300;
+  transition: opacity 0.3s;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.tab {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+  background: none;
+  border-top: none; border-left: none; border-right: none;
+}
+.tab:hover { color: var(--text-main); }
+.tab.active { color: var(--text-main); border-bottom-color: var(--text-main); font-weight: 500; }
+
+/* Service type icons (text-based) */
+.svc-type {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+.breadcrumb-link {
+  color: var(--accent-blue);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(44,95,168,0.3);
+  background: none; border: none; padding: 0;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  transition: text-decoration-color 0.15s;
+}
+.breadcrumb-link:hover { text-decoration-color: var(--accent-blue); }
+.breadcrumb-sep { color: var(--text-dim); }
+
+/* Search input */
+.search-wrap {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+.search-input {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--text-main);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 7px 12px;
+  outline: none;
+  border-radius: 3px;
+  transition: border-color 0.15s;
+}
+.search-input:focus { border-color: var(--border-strong); }
+.search-input::placeholder { color: var(--text-dim); }
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* --- Animations --- */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fadeIn 0.25s ease both; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel">
+
+/* ─── Mock Data ─── */
+const NOW = new Date('2026-04-24');
+
+function daysFrom(dateStr) {
+  const d = new Date(dateStr);
+  return Math.round((d - NOW) / 86400000);
+}
+
+const CONTACTS = [
+  { id:'c1', name:'Mariana López',    email:'mariana@geoark.com',     phone:'+57 310 555 0101' },
+  { id:'c2', name:'Felipe Restrepo',  email:'felipe@novagroup.co',    phone:'+57 315 555 0202' },
+  { id:'c3', name:'Camila Torres',    email:'camila@archilab.co',     phone:'+57 301 555 0303' },
+  { id:'c4', name:'Andrés Salazar',   email:'andres@concreto.com.co', phone:'+57 320 555 0404' },
+  { id:'c5', name:'Laura Mendez',     email:'laura@estudiopm.co',     phone:'+57 312 555 0505' },
+];
+
+const CLIENTS = [
+  { id:'cl1', company:'Geoark Studio',       domain:'geoark.com',       contact_id:'c1', notes:'Agencia creativa Medellín.' },
+  { id:'cl2', company:'Nova Group',           domain:'novagroup.co',     contact_id:'c2', notes:'Consultoría corporativa.' },
+  { id:'cl3', company:'Archi Lab',            domain:'archilab.co',      contact_id:'c3', notes:'Arquitectura y diseño.' },
+  { id:'cl4', company:'Concreto & Forma',     domain:'concreto.com.co',  contact_id:'c4', notes:'Constructora regional.' },
+  { id:'cl5', company:'Estudio PM',           domain:'estudiopm.co',     contact_id:'c5', notes:'Producción fotográfica.' },
+];
+
+const SERVICES = [
+  { id:'s1',  client_id:'cl1', type:'hosting',     provider:'SiteGround',  start:'2025-04-24', expiry:'2026-05-10', price:480000,  currency:'COP', auto_renew:true  },
+  { id:'s2',  client_id:'cl1', type:'domain',      provider:'Namecheap',   start:'2025-04-24', expiry:'2026-04-30', price:45000,   currency:'COP', auto_renew:false },
+  { id:'s3',  client_id:'cl1', type:'ssl',         provider:'Let\'s Enc.', start:'2026-01-24', expiry:'2026-07-23', price:0,       currency:'COP', auto_renew:true  },
+  { id:'s4',  client_id:'cl2', type:'maintenance',  provider:'Interno',    start:'2025-10-01', expiry:'2026-05-20', price:350000,  currency:'COP', auto_renew:false },
+  { id:'s5',  client_id:'cl2', type:'hosting',     provider:'Cloudways',   start:'2025-05-01', expiry:'2026-06-15', price:28,      currency:'USD', auto_renew:true  },
+  { id:'s6',  client_id:'cl3', type:'domain',      provider:'GoDaddy',     start:'2025-04-20', expiry:'2026-04-20', price:55000,   currency:'COP', auto_renew:false },
+  { id:'s7',  client_id:'cl3', type:'website',     provider:'Interno',     start:'2025-09-01', expiry:'2026-09-01', price:0,       currency:'COP', auto_renew:false },
+  { id:'s8',  client_id:'cl4', type:'hosting',     provider:'A2 Hosting',  start:'2025-12-01', expiry:'2026-12-01', price:320000,  currency:'COP', auto_renew:true  },
+  { id:'s9',  client_id:'cl4', type:'ssl',         provider:'Sectigo',     start:'2025-04-10', expiry:'2026-04-10', price:120000,  currency:'COP', auto_renew:false },
+  { id:'s10', client_id:'cl5', type:'email',       provider:'Google WS',   start:'2025-07-01', expiry:'2026-07-01', price:18,      currency:'USD', auto_renew:true  },
+  { id:'s11', client_id:'cl5', type:'maintenance',  provider:'Interno',    start:'2026-01-01', expiry:'2026-05-05', price:280000,  currency:'COP', auto_renew:false },
+];
+
+const LOGS = [
+  { id:'l1', service_id:'s2',  sent_at:'2026-03-31 09:02', type:'30d', status:'sent' },
+  { id:'l2', service_id:'s6',  sent_at:'2026-03-21 09:01', type:'30d', status:'sent' },
+  { id:'l3', service_id:'s9',  sent_at:'2026-03-25 09:00', type:'30d', status:'sent' },
+  { id:'l4', service_id:'s11', sent_at:'2026-04-09 09:03', type:'15d', status:'sent' },
+  { id:'l5', service_id:'s2',  sent_at:'2026-04-17 09:01', type:'7d',  status:'sent' },
+  { id:'l6', service_id:'s6',  sent_at:'2026-04-10 09:01', type:'14d', status:'failed' },
+  { id:'l7', service_id:'s9',  sent_at:'2026-04-10 09:00', type:'14d', status:'sent' },
+  { id:'l8', service_id:'s4',  sent_at:'2026-04-09 09:02', type:'15d', status:'sent' },
+];
+
+const SVC_LABELS = {
+  hosting:'Hosting', domain:'Dominio', ssl:'SSL', maintenance:'Mantenimiento',
+  website:'Sitio Web', email:'Email'
+};
+
+function fmtPrice(price, currency) {
+  if (!price) return '—';
+  if (currency === 'USD') return `USD $${price.toFixed(2)}`;
+  return `COP $${price.toLocaleString('es-CO')}`;
+}
+function fmtDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
+}
+function getDaysChip(days) {
+  if (days < 0)   return { cls:'days-expired', label:`Vencido hace ${Math.abs(days)}d` };
+  if (days <= 7)  return { cls:'days-urgent',  label:`${days}d restantes` };
+  if (days <= 15) return { cls:'days-warn',    label:`${days}d restantes` };
+  if (days <= 30) return { cls:'days-warn',    label:`${days}d restantes` };
+  return            { cls:'days-ok',     label:`${days}d restantes` };
+}
+function getStatusText(days) {
+  if (days < 0)   return { cls:'status-expired', label:'Vencido' };
+  if (days <= 7)  return { cls:'status-expired', label:'Urgente' };
+  if (days <= 15) return { cls:'status-warn',    label:'Próximo' };
+  if (days <= 30) return { cls:'status-soon',    label:'Este mes' };
+  return            { cls:'status-ok',     label:'Vigente' };
+}
+
+/* ─── Sparkline ─── */
+function Sparkline({ days }) {
+  const total = 365;
+  const used = Math.min(Math.max(total - days, 0), total);
+  const pct = (used / total) * 100;
+  const color = days < 0 ? '#b03030' : days <= 15 ? '#c8620a' : '#2a7a4b';
+  return (
+    <svg width="60" height="14" className="sparkline" title={`${Math.round(pct)}% transcurrido`}>
+      <rect x="0" y="5" width="60" height="4" rx="1" fill="rgba(0,0,0,0.07)" />
+      <rect x="0" y="5" width={Math.min(pct * 0.6, 60)} height="4" rx="1" fill={color} opacity="0.7" />
+    </svg>
+  );
+}
+
+/* ─── Toast ─── */
+function Toast({ msg }) {
+  return msg ? <div className="toast">{msg}</div> : null;
+}
+
+/* ─── App ─── */
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "serifFont": "Lora",
+  "colWidth": 860,
+  "showSparklines": true,
+  "compactRows": false,
+  "accentBlue": "#2c5fa8"
+}/*EDITMODE-END*/;
+
+function App() {
+  const [screen, setScreen] = React.useState('login');
+  const [authed, setAuthed] = React.useState(false);
+  const [clients, setClients] = React.useState(CLIENTS);
+  const [services, setServices] = React.useState(SERVICES);
+  const [selectedClientId, setSelectedClientId] = React.useState(null);
+  const [selectedServiceId, setSelectedServiceId] = React.useState(null);
+  const [toast, setToast] = React.useState('');
+  const [confirmDel, setConfirmDel] = React.useState(null);
+  const { tweaks = TWEAK_DEFAULTS } = (typeof useTweaks === 'function' ? useTweaks(TWEAK_DEFAULTS) : { tweaks: TWEAK_DEFAULTS });
+
+  function showToast(msg) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 2800);
+  }
+
+  function navigate(s, extraA, extraB) {
+    if (s === 'client-detail') setSelectedClientId(extraA);
+    if (s === 'service-edit') setSelectedServiceId(extraA);
+    setScreen(s);
+  }
+
+  function logout() { setAuthed(false); setScreen('login'); }
+
+  function addClient(data) {
+    const newContact = { id:'c'+(Date.now()), ...data.contact };
+    const newClient  = { id:'cl'+(Date.now()), ...data.client, contact_id: newContact.id };
+    setClients(prev => [...prev, newClient]);
+    showToast('Cliente registrado.');
+    setScreen('clients');
+  }
+
+  function addService(data) {
+    const svc = { id:'s'+(Date.now()), ...data };
+    setServices(prev => [...prev, svc]);
+    showToast('Servicio registrado.');
+    setScreen('client-detail');
+  }
+
+  function deleteService(id) {
+    setServices(prev => prev.filter(s => s.id !== id));
+    setConfirmDel(null);
+    showToast('Servicio eliminado.');
+  }
+
+  function deleteClient(id) {
+    setClients(prev => prev.filter(c => c.id !== id));
+    setServices(prev => prev.filter(s => s.client_id !== id));
+    setConfirmDel(null);
+    showToast('Cliente eliminado.');
+    setScreen('clients');
+  }
+
+  const cssVars = {
+    '--col-width': tweaks.colWidth + 'px',
+    '--font-serif': tweaks.serifFont === 'Merriweather' ? "'Merriweather', serif" : "'Lora', serif",
+    '--accent-blue': tweaks.accentBlue,
+  };
+
+  const allSvcWithDays = services.map(s => ({ ...s, days: daysFrom(s.expiry) }));
+  const expiredCount   = allSvcWithDays.filter(s => s.days < 0).length;
+  const urgentCount    = allSvcWithDays.filter(s => s.days >= 0 && s.days <= 7).length;
+  const warnCount      = allSvcWithDays.filter(s => s.days > 7 && s.days <= 30).length;
+
+  const sharedProps = { clients, services: allSvcWithDays, navigate, showToast,
+    setConfirmDel, tweaks, selectedClientId, selectedServiceId,
+    expiredCount, urgentCount, warnCount, addClient, addService, deleteService, deleteClient, logout };
+
+  return (
+    <div style={cssVars}>
+      {!authed || screen === 'login'
+        ? <LoginScreen onLogin={() => { setAuthed(true); setScreen('dashboard'); }} />
+        : (
+          <div className="page-wrap">
+            <Nav screen={screen} navigate={navigate} logout={logout} />
+            <main className="main fade-in" key={screen}>
+              {screen === 'dashboard'     && <DashboardScreen {...sharedProps} />}
+              {screen === 'clients'       && <ClientsScreen   {...sharedProps} />}
+              {screen === 'client-detail' && <ClientDetailScreen {...sharedProps} />}
+              {screen === 'new-client'    && <NewClientScreen  {...sharedProps} />}
+              {screen === 'new-service'   && <NewServiceScreen {...sharedProps} />}
+              {screen === 'logs'          && <LogsScreen       {...sharedProps} />}
+            </main>
+          </div>
+        )
+      }
+      <Toast msg={toast} />
+      {confirmDel && (
+        <div className="overlay-bg" onClick={() => setConfirmDel(null)}>
+          <div className="overlay-box" onClick={e => e.stopPropagation()}>
+            <div className="overlay-title">{confirmDel.title}</div>
+            <div className="overlay-body">{confirmDel.body}</div>
+            <div className="overlay-actions">
+              <button className="btn btn-ghost btn-sm" onClick={() => setConfirmDel(null)}>Cancelar</button>
+              <button className="btn btn-danger btn-sm" onClick={confirmDel.onConfirm}>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
+      <TweaksPanel defaults={TWEAK_DEFAULTS}>
+        <TweakSection label="Tipografía">
+          <TweakRadio id="serifFont" label="Serif" options={['Lora','Merriweather']} />
+          <TweakSlider id="colWidth" label="Ancho columna" min={680} max={1100} step={20} />
+        </TweakSection>
+        <TweakSection label="Tabla">
+          <TweakToggle id="showSparklines" label="Mostrar sparklines" />
+          <TweakToggle id="compactRows"    label="Filas compactas" />
+        </TweakSection>
+        <TweakSection label="Color">
+          <TweakColor id="accentBlue" label="Acento azul" />
+        </TweakSection>
+      </TweaksPanel>
+    </div>
+  );
+}
+
+/* ─── Nav ─── */
+function Nav({ screen, navigate, logout }) {
+  const links = [
+    { id:'dashboard', label:'Informe' },
+    { id:'clients',   label:'Clientes' },
+    { id:'logs',      label:'Notificaciones' },
+  ];
+  return (
+    <nav className="nav">
+      <div className="nav-inner">
+        <span className="nav-logo" onClick={() => navigate('dashboard')}>Renovio</span>
+        <div className="nav-links">
+          {links.map(l => (
+            <span key={l.id} className={`nav-link${screen===l.id||screen==='client-detail'&&l.id==='clients'?' active':''}`}
+              onClick={() => navigate(l.id)}>{l.label}</span>
+          ))}
+        </div>
+        <div className="nav-right">
+          <span className="nav-user">admin@renovio.app</span>
+          <button className="nav-logout" onClick={logout}>Salir</button>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+/* ─── Login ─── */
+function LoginScreen({ onLogin }) {
+  const [email, setEmail] = React.useState('admin@renovio.app');
+  const [pass, setPass]   = React.useState('');
+  const [err, setErr]     = React.useState('');
+  function submit(e) {
+    e.preventDefault();
+    if (pass === 'renovio' || pass === '1234' || pass.length >= 4) { onLogin(); }
+    else setErr('Contraseña incorrecta. Intenta con cualquier contraseña de 4+ caracteres.');
+  }
+  return (
+    <div className="login-wrap">
+      <div className="login-box fade-in">
+        <div className="login-logo">Renovio</div>
+        <div className="login-title">Acceso administrativo</div>
+        <div className="login-sub">Control de renovaciones web.</div>
+        <form onSubmit={submit}>
+          <div className="form-field">
+            <label className="form-label">Correo electrónico</label>
+            <input className="form-input" type="email" value={email}
+              onChange={e => setEmail(e.target.value)} placeholder="admin@renovio.app" />
+          </div>
+          <div className="form-field">
+            <label className="form-label">Contraseña</label>
+            <input className="form-input" type="password" value={pass}
+              onChange={e => { setPass(e.target.value); setErr(''); }}
+              placeholder="••••••••" autoFocus />
+            {err && <div className="login-error">{err}</div>}
+          </div>
+          <button className="btn btn-primary" type="submit" style={{width:'100%',justifyContent:'center',marginTop:'0.5rem'}}>
+            Ingresar
+          </button>
+        </form>
+        <div style={{marginTop:'1.5rem',fontSize:'0.72rem',color:'var(--text-dim)',fontFamily:'var(--font-sans)',fontStyle:'italic'}}>
+          Demo: cualquier contraseña de 4+ caracteres
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Dashboard ─── */
+function DashboardScreen({ clients, services, navigate, expiredCount, urgentCount, warnCount, tweaks }) {
+  const totalClients  = clients.length;
+  const totalServices = services.length;
+  const okCount       = services.filter(s => s.days > 30).length;
+
+  const urgent = services.filter(s => s.days >= 0 && s.days <= 7).sort((a,b) => a.days-b.days);
+  const expd   = services.filter(s => s.days < 0).sort((a,b) => a.days-b.days);
+  const warn   = services.filter(s => s.days > 7 && s.days <= 30).sort((a,b) => a.days-b.days);
+  const attn   = [...expd, ...urgent, ...warn];
+
+  function clientName(cid) {
+    return clients.find(c => c.id === cid)?.company || '—';
+  }
+
+  const rowPad = tweaks.compactRows ? '6px 8px' : '10px 8px';
+
+  return (
+    <div className="col">
+      <div className="page-eyebrow">Informe de estado — {NOW.toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'})}</div>
+      <h1 className="page-title">Renovaciones Web</h1>
+      <div className="page-subtitle">Reporte automático de vencimientos y actividad reciente.</div>
+
+      {/* Narrative */}
+      <p className="narrative">
+        La cartera activa comprende{' '}
+        <span className="stat-inline">{totalClients} clientes</span> y{' '}
+        <span className="stat-inline">{totalServices} servicios</span> en seguimiento.{' '}
+        {expiredCount > 0 && <>
+          <span className="stat-inline stat-red">{expiredCount} servicio{expiredCount>1?'s':''}</span>{' '}
+          {expiredCount > 1 ? 'están vencidos' : 'está vencido'} y requiere{expiredCount>1?'n':''} atención inmediata.{' '}
+        </>}
+        {urgentCount > 0 && <>
+          <span className="stat-inline stat-red">{urgentCount}</span> vence{urgentCount>1?'n':''} en menos de 7 días.{' '}
+        </>}
+        {warnCount > 0 && <>
+          <span className="stat-inline stat-orange">{warnCount}</span> adicionale{warnCount>1?'s':''} expira{warnCount>1?'n':''} este mes.{' '}
+        </>}
+        {okCount > 0 && <>
+          Los <span className="stat-inline stat-green">{okCount} restantes</span> se encuentran vigentes sin riesgo inmediato.
+        </>}
+      </p>
+
+      {/* Summary strip */}
+      <div className="summary-strip">
+        <div className="summary-item">
+          <div className="summary-num">{totalServices}</div>
+          <div className="summary-label">Servicios totales</div>
+        </div>
+        <div className="summary-item">
+          <div className="summary-num" style={{color:'var(--accent-red)'}}>{expiredCount + urgentCount}</div>
+          <div className="summary-label">Críticos</div>
+        </div>
+        <div className="summary-item">
+          <div className="summary-num" style={{color:'var(--accent-orange)'}}>{warnCount}</div>
+          <div className="summary-label">Próximos 30d</div>
+        </div>
+        <div className="summary-item">
+          <div className="summary-num" style={{color:'var(--accent-green)'}}>{okCount}</div>
+          <div className="summary-label">Vigentes</div>
+        </div>
+        <div className="summary-item">
+          <div className="summary-num">{totalClients}</div>
+          <div className="summary-label">Clientes</div>
+        </div>
+      </div>
+
+      {/* Attention table */}
+      {attn.length > 0 && <>
+        <div className="section-head" style={{marginBottom:'0.5rem'}}>
+          <span className="section-title">Servicios que requieren atención</span>
+        </div>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Servicio</th>
+              <th>Proveedor</th>
+              <th>Vencimiento</th>
+              <th>Estado</th>
+              {tweaks.showSparklines && <th></th>}
+            </tr>
+          </thead>
+          <tbody>
+            {attn.map(s => {
+              const chip = getDaysChip(s.days);
+              const stat = getStatusText(s.days);
+              return (
+                <tr key={s.id} onClick={() => navigate('client-detail', s.client_id)}>
+                  <td style={{padding: rowPad}}>{clientName(s.client_id)}</td>
+                  <td style={{padding: rowPad}}><span className="svc-type">{SVC_LABELS[s.type]}</span></td>
+                  <td style={{padding: rowPad, color:'var(--text-muted)'}}>{s.provider}</td>
+                  <td style={{padding: rowPad}} className="col-mono">{fmtDate(s.expiry)}</td>
+                  <td style={{padding: rowPad}}>
+                    <span className={`days-chip ${chip.cls}`}>{chip.label}</span>
+                  </td>
+                  {tweaks.showSparklines && <td style={{padding: rowPad}}><Sparkline days={s.days} /></td>}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </>}
+
+      <hr className="rule" />
+
+      {/* All services compact */}
+      <div className="section-head" style={{marginBottom:'0.5rem'}}>
+        <span className="section-title">Todos los servicios</span>
+        <button className="btn btn-ghost btn-sm" onClick={() => navigate('new-service')}>+ Nuevo servicio</button>
+      </div>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Tipo</th>
+            <th>Vence</th>
+            <th className="col-right">Valor</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {services.sort((a,b) => a.days - b.days).map(s => {
+            const stat = getStatusText(s.days);
+            return (
+              <tr key={s.id} onClick={() => navigate('client-detail', s.client_id)}>
+                <td style={{padding: rowPad}}>{clientName(s.client_id)}</td>
+                <td style={{padding: rowPad}}><span className="svc-type">{SVC_LABELS[s.type]}</span></td>
+                <td style={{padding: rowPad}} className="col-mono">{fmtDate(s.expiry)}</td>
+                <td style={{padding: rowPad}} className="col-right">{fmtPrice(s.price, s.currency)}</td>
+                <td style={{padding: rowPad}}><span className={`status-badge ${stat.cls}`}>{stat.label}</span></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ─── Clients List ─── */
+function ClientsScreen({ clients, services, navigate, setConfirmDel, deleteClient, tweaks }) {
+  const [search, setSearch] = React.useState('');
+  const filtered = clients.filter(c =>
+    c.company.toLowerCase().includes(search.toLowerCase()) ||
+    (c.domain||'').toLowerCase().includes(search.toLowerCase())
+  );
+  const rowPad = tweaks.compactRows ? '6px 8px' : '10px 8px';
+
+  function svcSummary(cid) {
+    const svcs = services.filter(s => s.client_id === cid);
+    const bad  = svcs.filter(s => s.days <= 15).length;
+    return { total: svcs.length, bad };
+  }
+
+  return (
+    <div className="col">
+      <div className="page-eyebrow">Directorio</div>
+      <div style={{display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'0.3rem'}}>
+        <h1 className="page-title">Clientes</h1>
+        <button className="btn btn-primary" style={{marginTop:'0.5rem'}} onClick={() => navigate('new-client')}>
+          + Nuevo cliente
+        </button>
+      </div>
+      <div className="page-subtitle">{clients.length} clientes registrados en la base de datos.</div>
+
+      <div className="search-wrap">
+        <input className="search-input" placeholder="Buscar por empresa o dominio…"
+          value={search} onChange={e => setSearch(e.target.value)} />
+      </div>
+
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Dominio</th>
+            <th className="col-right">Servicios</th>
+            <th>Alertas</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.map(c => {
+            const { total, bad } = svcSummary(c.id);
+            return (
+              <tr key={c.id}>
+                <td style={{padding: rowPad}}>
+                  <button className="btn-link" onClick={() => navigate('client-detail', c.id)}>
+                    {c.company}
+                  </button>
+                </td>
+                <td style={{padding: rowPad}} className="col-mono">{c.domain || '—'}</td>
+                <td style={{padding: rowPad}} className="col-right">{total}</td>
+                <td style={{padding: rowPad}}>
+                  {bad > 0
+                    ? <span className="status-badge status-warn">{bad} próximo{bad>1?'s':''}</span>
+                    : <span className="status-badge status-ok">Sin alertas</span>
+                  }
+                </td>
+                <td style={{padding: rowPad, textAlign:'right'}}>
+                  <button className="btn btn-ghost btn-sm"
+                    onClick={() => navigate('client-detail', c.id)}>Ver →</button>
+                </td>
+              </tr>
+            );
+          })}
+          {filtered.length === 0 && (
+            <tr><td colSpan={5} className="empty-state" style={{padding:'3rem'}}>
+              No se encontraron clientes.
+            </td></tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ─── Client Detail ─── */
+function ClientDetailScreen({ clients, services, navigate, setConfirmDel, deleteClient, deleteService, tweaks, selectedClientId, showToast }) {
+  const client  = clients.find(c => c.id === selectedClientId);
+  const contact = CONTACTS.find(c => c.id === client?.contact_id);
+  const svcs    = services.filter(s => s.client_id === selectedClientId);
+  const [tab, setTab] = React.useState('services');
+  const rowPad = tweaks.compactRows ? '6px 8px' : '10px 8px';
+
+  if (!client) return <div className="col"><p style={{padding:'4rem 0',color:'var(--text-muted)',fontFamily:'var(--font-sans)',fontSize:'0.9rem'}}>Cliente no encontrado.</p></div>;
+
+  const clientLogs = LOGS.filter(l => svcs.some(s => s.id === l.service_id));
+
+  return (
+    <div className="col">
+      <div className="breadcrumb">
+        <button className="breadcrumb-link" onClick={() => navigate('clients')}>Clientes</button>
+        <span className="breadcrumb-sep">›</span>
+        <span>{client.company}</span>
+      </div>
+
+      <div className="detail-header">
+        <div className="page-eyebrow">Ficha de cliente</div>
+        <div style={{display:'flex', alignItems:'flex-start', justifyContent:'space-between'}}>
+          <h1 className="page-title">{client.company}</h1>
+          <div style={{display:'flex', gap:'0.5rem', marginTop:'0.4rem'}}>
+            <button className="btn btn-ghost btn-sm" onClick={() => navigate('new-service')}>+ Servicio</button>
+            <button className="btn btn-danger btn-sm" onClick={() => setConfirmDel({
+              title: 'Eliminar cliente',
+              body: `¿Eliminar ${client.company} y todos sus servicios? Esta acción no se puede deshacer.`,
+              onConfirm: () => deleteClient(client.id)
+            })}>Eliminar</button>
+          </div>
+        </div>
+        {client.notes && <div style={{fontFamily:'var(--font-serif)', fontSize:'0.95rem', color:'var(--text-muted)', fontStyle:'italic', marginTop:'0.5rem'}}>{client.notes}</div>}
+        <div className="detail-meta">
+          <div className="meta-item">
+            <div className="meta-key">Dominio</div>
+            <div className="meta-val col-mono">{client.domain || '—'}</div>
+          </div>
+          {contact && <>
+            <div className="meta-item">
+              <div className="meta-key">Contacto</div>
+              <div className="meta-val">{contact.name}</div>
+            </div>
+            <div className="meta-item">
+              <div className="meta-key">Correo</div>
+              <div className="meta-val"><a href={`mailto:${contact.email}`} style={{color:'var(--accent-blue)'}}>{contact.email}</a></div>
+            </div>
+            <div className="meta-item">
+              <div className="meta-key">Teléfono</div>
+              <div className="meta-val">{contact.phone || '—'}</div>
+            </div>
+          </>}
+        </div>
+      </div>
+
+      <div className="tabs">
+        <button className={`tab${tab==='services'?' active':''}`} onClick={() => setTab('services')}>
+          Servicios ({svcs.length})
+        </button>
+        <button className={`tab${tab==='logs'?' active':''}`} onClick={() => setTab('logs')}>
+          Notificaciones ({clientLogs.length})
+        </button>
+      </div>
+
+      {tab === 'services' && (
+        svcs.length === 0
+          ? <div className="empty-state">No hay servicios registrados para este cliente.</div>
+          : <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Proveedor</th>
+                  <th>Inicio</th>
+                  <th>Vencimiento</th>
+                  <th className="col-right">Precio</th>
+                  <th>Estado</th>
+                  {tweaks.showSparklines && <th></th>}
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {svcs.sort((a,b) => a.days - b.days).map(s => {
+                  const chip = getDaysChip(s.days);
+                  return (
+                    <tr key={s.id}>
+                      <td style={{padding: rowPad}}><span className="svc-type">{SVC_LABELS[s.type]}</span></td>
+                      <td style={{padding: rowPad, color:'var(--text-muted)'}}>{s.provider}</td>
+                      <td style={{padding: rowPad}} className="col-mono">{fmtDate(s.start)}</td>
+                      <td style={{padding: rowPad}} className="col-mono">{fmtDate(s.expiry)}</td>
+                      <td style={{padding: rowPad}} className="col-right">{fmtPrice(s.price, s.currency)}</td>
+                      <td style={{padding: rowPad}}><span className={`days-chip ${chip.cls}`}>{chip.label}</span></td>
+                      {tweaks.showSparklines && <td style={{padding: rowPad}}><Sparkline days={s.days} /></td>}
+                      <td style={{padding: rowPad, textAlign:'right'}}>
+                        <button className="btn-link" style={{color:'var(--text-dim)', fontSize:'0.72rem'}}
+                          onClick={() => setConfirmDel({
+                            title:'Eliminar servicio',
+                            body:`¿Eliminar el servicio de ${SVC_LABELS[s.type]} con ${s.provider}?`,
+                            onConfirm: () => deleteService(s.id)
+                          })}>Eliminar</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+      )}
+
+      {tab === 'logs' && (
+        clientLogs.length === 0
+          ? <div className="empty-state">Sin notificaciones registradas.</div>
+          : <div>
+              {clientLogs.map(l => {
+                const svc = svcs.find(s => s.id === l.service_id);
+                return (
+                  <div key={l.id} className="log-entry">
+                    <span className="log-time">{l.sent_at}</span>
+                    <span className={`log-type log-${l.type}`}>{l.type}</span>
+                    <span style={{flex:1, color:'var(--text-muted)'}}>
+                      {svc ? SVC_LABELS[svc.type] : '—'} · {svc?.provider}
+                    </span>
+                    <span className={l.status==='sent'?'log-ok':'log-fail'}>
+                      {l.status === 'sent' ? '✓ Enviado' : '✗ Error'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── New Client ─── */
+function NewClientScreen({ navigate, addClient }) {
+  const [form, setForm] = React.useState({
+    company:'', domain:'', notes:'',
+    name:'', email:'', phone:''
+  });
+  const [errors, setErrors] = React.useState({});
+
+  function set(k, v) { setForm(prev => ({...prev, [k]:v})); setErrors(prev => ({...prev, [k]:''})); }
+
+  function submit(e) {
+    e.preventDefault();
+    const errs = {};
+    if (!form.company.trim()) errs.company = 'Campo requerido';
+    if (!form.name.trim())    errs.name    = 'Campo requerido';
+    if (!form.email.trim())   errs.email   = 'Campo requerido';
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    addClient({
+      client:  { company_name: form.company, domain: form.domain, notes: form.notes },
+      contact: { name: form.name, email: form.email, phone: form.phone }
+    });
+  }
+
+  return (
+    <div className="col-narrow">
+      <div className="breadcrumb">
+        <button className="breadcrumb-link" onClick={() => navigate('clients')}>Clientes</button>
+        <span className="breadcrumb-sep">›</span>
+        <span>Nuevo</span>
+      </div>
+      <div className="page-eyebrow">Registro</div>
+      <h1 className="page-title">Nuevo cliente</h1>
+      <div className="page-subtitle">Ingrese los datos de la empresa y su contacto principal.</div>
+
+      <form onSubmit={submit}>
+        <div className="form-section-title">Empresa</div>
+        <div className="form-field">
+          <label className="form-label">Nombre de la empresa *</label>
+          <input className="form-input" value={form.company} onChange={e => set('company', e.target.value)} placeholder="Ej. Geoark Studio" />
+          {errors.company && <div style={{fontSize:'0.72rem',color:'var(--accent-red)',marginTop:'3px',fontFamily:'var(--font-sans)'}}>{errors.company}</div>}
+        </div>
+        <div className="form-field">
+          <label className="form-label">Dominio principal</label>
+          <input className="form-input" value={form.domain} onChange={e => set('domain', e.target.value)} placeholder="ejemplo.com" />
+        </div>
+        <div className="form-field">
+          <label className="form-label">Notas internas</label>
+          <input className="form-input" value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Contexto del cliente…" />
+        </div>
+
+        <div className="form-section-title">Contacto principal</div>
+        <div className="form-field">
+          <label className="form-label">Nombre completo *</label>
+          <input className="form-input" value={form.name} onChange={e => set('name', e.target.value)} placeholder="Nombre del contacto" />
+          {errors.name && <div style={{fontSize:'0.72rem',color:'var(--accent-red)',marginTop:'3px',fontFamily:'var(--font-sans)'}}>{errors.name}</div>}
+        </div>
+        <div className="form-row">
+          <div className="form-field">
+            <label className="form-label">Correo *</label>
+            <input className="form-input" type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="correo@empresa.com" />
+            {errors.email && <div style={{fontSize:'0.72rem',color:'var(--accent-red)',marginTop:'3px',fontFamily:'var(--font-sans)'}}>{errors.email}</div>}
+          </div>
+          <div className="form-field">
+            <label className="form-label">Teléfono</label>
+            <input className="form-input" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+57 300 000 0000" />
+          </div>
+        </div>
+
+        <div style={{display:'flex', gap:'0.75rem', marginTop:'1rem'}}>
+          <button className="btn btn-primary" type="submit">Registrar cliente</button>
+          <button className="btn btn-ghost" type="button" onClick={() => navigate('clients')}>Cancelar</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/* ─── New Service ─── */
+function NewServiceScreen({ clients, navigate, addService, selectedClientId }) {
+  const [form, setForm] = React.useState({
+    client_id: selectedClientId || (clients[0]?.id || ''),
+    type: 'hosting', provider: '', start: '', expiry: '',
+    price: '', currency: 'COP', auto_renew: false
+  });
+  const [errors, setErrors] = React.useState({});
+
+  function set(k, v) { setForm(prev => ({...prev, [k]:v})); setErrors(prev => ({...prev, [k]:''})); }
+
+  function submit(e) {
+    e.preventDefault();
+    const errs = {};
+    if (!form.client_id) errs.client_id = 'Seleccione un cliente';
+    if (!form.provider.trim()) errs.provider = 'Campo requerido';
+    if (!form.expiry)    errs.expiry   = 'Campo requerido';
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    addService({
+      client_id: form.client_id,
+      type: form.type,
+      provider: form.provider,
+      start: form.start,
+      expiry: form.expiry,
+      price: parseFloat(form.price) || 0,
+      currency: form.currency,
+      auto_renew: form.auto_renew,
+    });
+  }
+
+  const svcTypes = Object.entries(SVC_LABELS);
+
+  return (
+    <div className="col-narrow">
+      <div className="breadcrumb">
+        <button className="breadcrumb-link" onClick={() => navigate('clients')}>Clientes</button>
+        <span className="breadcrumb-sep">›</span>
+        <span>Nuevo servicio</span>
+      </div>
+      <div className="page-eyebrow">Registro</div>
+      <h1 className="page-title">Nuevo servicio</h1>
+      <div className="page-subtitle">Asocie un servicio web a un cliente existente.</div>
+
+      <form onSubmit={submit}>
+        <div className="form-section-title">Asociación</div>
+        <div className="form-field">
+          <label className="form-label">Cliente *</label>
+          <select className="form-select" value={form.client_id} onChange={e => set('client_id', e.target.value)}>
+            <option value="">— Seleccionar —</option>
+            {clients.map(c => <option key={c.id} value={c.id}>{c.company}</option>)}
+          </select>
+          {errors.client_id && <div style={{fontSize:'0.72rem',color:'var(--accent-red)',marginTop:'3px',fontFamily:'var(--font-sans)'}}>{errors.client_id}</div>}
+        </div>
+
+        <div className="form-section-title">Detalle del servicio</div>
+        <div className="form-row">
+          <div className="form-field">
+            <label className="form-label">Tipo de servicio</label>
+            <select className="form-select" value={form.type} onChange={e => set('type', e.target.value)}>
+              {svcTypes.map(([k,v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          </div>
+          <div className="form-field">
+            <label className="form-label">Proveedor *</label>
+            <input className="form-input" value={form.provider} onChange={e => set('provider', e.target.value)} placeholder="Ej. SiteGround, Namecheap…" />
+            {errors.provider && <div style={{fontSize:'0.72rem',color:'var(--accent-red)',marginTop:'3px',fontFamily:'var(--font-sans)'}}>{errors.provider}</div>}
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-field">
+            <label className="form-label">Fecha inicio</label>
+            <input className="form-input" type="date" value={form.start} onChange={e => set('start', e.target.value)} />
+          </div>
+          <div className="form-field">
+            <label className="form-label">Fecha vencimiento *</label>
+            <input className="form-input" type="date" value={form.expiry} onChange={e => set('expiry', e.target.value)} />
+            {errors.expiry && <div style={{fontSize:'0.72rem',color:'var(--accent-red)',marginTop:'3px',fontFamily:'var(--font-sans)'}}>{errors.expiry}</div>}
+          </div>
+        </div>
+
+        <div className="form-section-title">Facturación</div>
+        <div className="form-row">
+          <div className="form-field">
+            <label className="form-label">Precio</label>
+            <input className="form-input" type="number" min="0" step="0.01" value={form.price}
+              onChange={e => set('price', e.target.value)} placeholder="0" />
+          </div>
+          <div className="form-field">
+            <label className="form-label">Moneda</label>
+            <select className="form-select" value={form.currency} onChange={e => set('currency', e.target.value)}>
+              <option value="COP">COP</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+        </div>
+        <div className="form-field" style={{display:'flex', alignItems:'center', gap:'0.75rem'}}>
+          <input type="checkbox" id="auto_renew" checked={form.auto_renew}
+            onChange={e => set('auto_renew', e.target.checked)}
+            style={{width:'16px', height:'16px', cursor:'pointer', accentColor:'var(--text-main)'}} />
+          <label htmlFor="auto_renew" style={{fontFamily:'var(--font-sans)', fontSize:'0.85rem', cursor:'pointer', color:'var(--text-main)'}}>
+            Renovación automática
+          </label>
+        </div>
+
+        <div style={{display:'flex', gap:'0.75rem', marginTop:'1.5rem'}}>
+          <button className="btn btn-primary" type="submit">Registrar servicio</button>
+          <button className="btn btn-ghost" type="button" onClick={() => navigate('clients')}>Cancelar</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/* ─── Logs ─── */
+function LogsScreen({ services, clients }) {
+  const enriched = LOGS.map(l => {
+    const svc = services.find(s => s.id === l.service_id);
+    const cl  = clients.find(c => c.id === svc?.client_id);
+    return { ...l, svc, cl };
+  }).sort((a,b) => b.sent_at.localeCompare(a.sent_at));
+
+  const sent   = enriched.filter(l => l.status === 'sent').length;
+  const failed = enriched.filter(l => l.status === 'failed').length;
+
+  return (
+    <div className="col">
+      <div className="page-eyebrow">Registro</div>
+      <h1 className="page-title">Notificaciones</h1>
+      <div className="page-subtitle">
+        Historial de envíos automáticos del Cron Worker.{' '}
+        <span className="stat-inline stat-green">{sent} enviados</span>
+        {failed > 0 && <>, <span className="stat-inline stat-red">{failed} fallidos</span></>}.
+      </div>
+
+      <div className="summary-strip">
+        <div className="summary-item">
+          <div className="summary-num">{enriched.length}</div>
+          <div className="summary-label">Total registros</div>
+        </div>
+        <div className="summary-item">
+          <div className="summary-num" style={{color:'var(--accent-green)'}}>{sent}</div>
+          <div className="summary-label">Enviados</div>
+        </div>
+        <div className="summary-item">
+          <div className="summary-num" style={{color:'var(--accent-red)'}}>{failed}</div>
+          <div className="summary-label">Fallidos</div>
+        </div>
+      </div>
+
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>Fecha y hora</th>
+            <th>Tipo</th>
+            <th>Cliente</th>
+            <th>Servicio</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {enriched.map(l => (
+            <tr key={l.id}>
+              <td className="col-mono">{l.sent_at}</td>
+              <td><span className={`log-type log-${l.type}`}>{l.type}</span></td>
+              <td>{l.cl?.company || '—'}</td>
+              <td><span className="svc-type">{l.svc ? SVC_LABELS[l.svc.type] : '—'}</span>{' · '}<span style={{color:'var(--text-muted)', fontSize:'0.78rem'}}>{l.svc?.provider}</span></td>
+              <td>
+                <span style={{fontFamily:'var(--font-sans)', fontSize:'0.78rem', fontWeight:500}}
+                  className={l.status==='sent'?'log-ok':'log-fail'}>
+                  {l.status === 'sent' ? '✓ Enviado' : '✗ Fallido'}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
