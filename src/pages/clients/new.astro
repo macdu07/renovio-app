@@ -3,6 +3,22 @@ import Layout from '../../layouts/DocumentLayout.astro';
 import { db } from '../../db';
 import { clients, contacts } from '../../db/schema';
 
+const PHONE_CODES = [
+  { code: '+57',  label: '+57 · Colombia' },
+  { code: '+1',   label: '+1 · EE.UU.' },
+  { code: '+52',  label: '+52 · México' },
+  { code: '+54',  label: '+54 · Argentina' },
+  { code: '+56',  label: '+56 · Chile' },
+  { code: '+51',  label: '+51 · Perú' },
+  { code: '+58',  label: '+58 · Venezuela' },
+  { code: '+593', label: '+593 · Ecuador' },
+  { code: '+591', label: '+591 · Bolivia' },
+  { code: '+595', label: '+595 · Paraguay' },
+  { code: '+598', label: '+598 · Uruguay' },
+  { code: '+34',  label: '+34 · España' },
+  { code: '+44',  label: '+44 · Reino Unido' },
+];
+
 let error = '';
 
 if (Astro.request.method === 'POST') {
@@ -11,7 +27,9 @@ if (Astro.request.method === 'POST') {
   const notes = formData.get('notes')?.toString().trim();
   const name = formData.get('name')?.toString().trim();
   const email = formData.get('email')?.toString().trim();
-  const phone = formData.get('phone')?.toString().trim();
+  const phoneCode = formData.get('phoneCode')?.toString() || '+57';
+  const phoneNumber = formData.get('phoneNumber')?.toString().trim() || '';
+  const phone = phoneNumber ? `${phoneCode} ${phoneNumber}` : '';
 
   if (!company || !name || !email) {
     error = 'Los campos nombre de empresa, nombre del contacto y correo son requeridos.';
@@ -70,14 +88,19 @@ if (Astro.request.method === 'POST') {
         <input class="form-input" type="text" id="name" name="name" placeholder="Nombre del contacto" required />
       </div>
 
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label" for="email">Correo *</label>
-          <input class="form-input" type="email" id="email" name="email" placeholder="correo@empresa.com" required />
-        </div>
-        <div class="form-field">
-          <label class="form-label" for="phone">Teléfono</label>
-          <input class="form-input" type="text" id="phone" name="phone" placeholder="+57 300 000 0000" />
+      <div class="form-field">
+        <label class="form-label" for="email">Correo *</label>
+        <input class="form-input" type="email" id="email" name="email" placeholder="correo@empresa.com" required />
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="phoneNumber">Teléfono</label>
+        <div style="display: flex; gap: 0.375rem;">
+          <select class="form-select" name="phoneCode" id="phoneCode" style="width: 160px; flex-shrink: 0;">
+            {PHONE_CODES.map(p => <option value={p.code}>{p.label}</option>)}
+          </select>
+          <input class="form-input" type="tel" id="phoneNumber" name="phoneNumber"
+            placeholder="300 000 0000" style="flex: 1; min-width: 0;" />
         </div>
       </div>
 

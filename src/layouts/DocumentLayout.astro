@@ -5,11 +5,13 @@ import ClientRouter from 'astro/components/ClientRouter.astro';
 interface Props {
   title?: string;
   description?: string;
+  showNav?: boolean;
 }
 
 const {
   title = 'Renovio',
-  description = 'Control de renovaciones web'
+  description = 'Control de renovaciones web',
+  showNav = true,
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
@@ -40,7 +42,7 @@ function isActive(href: string): boolean {
 </head>
 <body>
   <div class="page-wrap">
-    <nav class="nav" transition:persist>
+    {showNav && <nav class="nav" transition:persist>
       <div class="nav-inner">
         <a href="/" class="nav-logo">Renovio</a>
         <div class="nav-links">
@@ -60,10 +62,23 @@ function isActive(href: string): boolean {
           </form>
         </div>
       </div>
-    </nav>
+    </nav>}
     <main class="main" transition:animate="fade">
       <slot />
     </main>
   </div>
 </body>
+<script>
+  function updateActiveLink() {
+    const path = window.location.pathname;
+    document.querySelectorAll<HTMLAnchorElement>('.nav-link').forEach(link => {
+      const href = link.getAttribute('href') ?? '';
+      const isActive = href === '/' ? path === '/' : path.startsWith(href);
+      link.classList.toggle('active', isActive);
+    });
+  }
+
+  // Runs on first load and after every ClientRouter navigation
+  document.addEventListener('astro:page-load', updateActiveLink);
+</script>
 </html>

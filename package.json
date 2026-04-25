@@ -23,9 +23,6 @@
     "drizzle-orm": "^0.45.2",
     "wrangler": "^4.85.0"
   },
-  "overrides": {
-    "vite": "^7"
-  },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "drizzle-kit": "^0.31.10"
