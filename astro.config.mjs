@@ -7,6 +7,9 @@ export default defineConfig({
     mode: "standalone",
   }),
   output: "server",
+  security: {
+    checkOrigin: false,
+  },
   server: {
     port: 4321,
   },
