@@ -1,14 +1,30 @@
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
-import { getEnvVar } from '../lib/env';
 
-export function getDb(context: any) {
-  const dbUrl = getEnvVar(context, 'DATABASE_URL');
-  if (!dbUrl) {
-    const keys = context?.locals?.runtime?.env ? Object.keys(context.locals.runtime.env).join(', ') : 'no runtime.env';
-    throw new Error(`DATABASE_URL not set. Available keys in Cloudflare env: ${keys || 'none'}. Is context.env available? ${!!context?.env}.`);
+export async function getDb() {
+  let dbUrl: string | undefined;
+
+  // Astro v6 + Cloudflare: read from cloudflare:workers env
+  try {
+    // @ts-ignore
+    const { env } = await import('cloudflare:workers');
+    dbUrl = env?.DATABASE_URL;
+  } catch (e) {
+    // Not in Cloudflare runtime
   }
+
+  // Fallback: local dev via Vite
+  if (!dbUrl) {
+    try {
+      dbUrl = import.meta.env.DATABASE_URL;
+    } catch (e) {}
+  }
+
+  if (!dbUrl) {
+    throw new Error('DATABASE_URL not set');
+  }
+
   const sql = neon(dbUrl);
   return drizzle(sql, { schema });
 }

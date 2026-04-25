@@ -1,20 +1,28 @@
 import type { APIRoute } from 'astro';
 import { neon } from '@neondatabase/serverless';
-import { getEnvVar } from '../../lib/env';
 import { hashPassword } from '../../lib/auth';
 
-export const POST: APIRoute = async (context) => {
-  const { request, cookies, redirect } = context;
+async function getCfEnv() {
+  try {
+    // @ts-ignore
+    const { env } = await import('cloudflare:workers');
+    return env;
+  } catch (e) {
+    return import.meta.env;
+  }
+}
 
+export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const session = cookies.get('session')?.value;
   if (!session) return redirect('/login');
 
   const userId = session.replace('user-', '');
-
   const formData = await request.formData();
   const action = formData.get('action')?.toString();
 
-  const dbUrl = getEnvVar(context, 'DATABASE_URL');
+  const cfEnv = await getCfEnv();
+  const dbUrl = cfEnv?.DATABASE_URL;
+
   if (!dbUrl) {
     return redirect('/login?error=Error+de+conexión+a+la+base+de+datos');
   }
@@ -30,7 +38,6 @@ export const POST: APIRoute = async (context) => {
         return redirect('/account?error=El+correo+es+requerido');
       }
 
-      // Check if email is taken by another user
       const existing = await sql`SELECT id FROM users WHERE email = ${email} AND id != ${userId} LIMIT 1`;
       if (existing.length > 0) {
         return redirect('/account?error=Ese+correo+ya+está+en+uso');

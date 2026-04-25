@@ -17,7 +17,7 @@ let servicesWithDays: any[] = [];
 let pageError = '';
 
 try {
-  const db = getDb(Astro);
+  const db = await getDb();
 
   allServices = await db.select({
     id: services.id,

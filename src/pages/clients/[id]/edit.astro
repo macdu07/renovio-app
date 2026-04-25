@@ -2,7 +2,7 @@
 import Layout from '../../../layouts/DocumentLayout.astro';
 import { getDb } from '../../../db';
 
-const db = getDb(Astro);
+const db = await getDb();
 import { clients, contacts } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
 
