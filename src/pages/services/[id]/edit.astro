@@ -49,6 +49,17 @@ if (Astro.request.method === 'POST') {
   }
 }
 
+let initialPeriod = '';
+if (service.startDate && service.expiryDate) {
+  const start = new Date(service.startDate + 'T00:00:00');
+  const end = new Date(service.expiryDate + 'T00:00:00');
+  let diffMonths = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+  // Adjust if day of month is slightly off due to different month lengths, but for exact periods it's usually fine
+  if (diffMonths === 1) initialPeriod = '1';
+  else if (diffMonths === 6) initialPeriod = '6';
+  else if (diffMonths === 12) initialPeriod = '12';
+}
+
 const SVC_LABELS: Record<string, string> = {
   hosting: 'Hosting', domain: 'Dominio', ssl: 'SSL',
   maintenance: 'Mantenimiento', website: 'Sitio Web', email: 'Email',
@@ -104,10 +115,10 @@ const SVC_LABELS: Record<string, string> = {
         <div class="form-field">
           <label class="form-label" for="period">Período</label>
           <select class="form-select" id="period">
-            <option value="">Manual</option>
-            <option value="1">1 mes</option>
-            <option value="6">6 meses</option>
-            <option value="12">1 año</option>
+            <option value="" selected={initialPeriod === ''}>Manual</option>
+            <option value="1" selected={initialPeriod === '1'}>1 mes</option>
+            <option value="6" selected={initialPeriod === '6'}>6 meses</option>
+            <option value="12" selected={initialPeriod === '12'}>1 año</option>
           </select>
         </div>
       </div>
@@ -161,6 +172,11 @@ const SVC_LABELS: Record<string, string> = {
   }
 
   function calcExpiryDate() {
+    const isManual = periodSelect.value === "";
+    expiryDateInput.readOnly = !isManual;
+
+    if (isManual) return;
+
     const months = parseInt(periodSelect.value);
     if (!startDateInput.value || !months) return;
     const d = new Date(startDateInput.value + 'T00:00:00');
@@ -169,8 +185,10 @@ const SVC_LABELS: Record<string, string> = {
   }
 
   serviceTypeSelect.addEventListener('change', toggleDomainField);
+  startDateInput.addEventListener('input', calcExpiryDate);
   startDateInput.addEventListener('change', calcExpiryDate);
   periodSelect.addEventListener('change', calcExpiryDate);
 
   toggleDomainField();
+  calcExpiryDate();
 </script>

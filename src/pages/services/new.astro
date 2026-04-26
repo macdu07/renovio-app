@@ -158,6 +158,11 @@ if (Astro.request.method === 'POST') {
   }
 
   function calcExpiryDate() {
+    const isManual = periodSelect.value === "";
+    expiryDateInput.readOnly = !isManual;
+
+    if (isManual) return;
+
     const months = parseInt(periodSelect.value);
     if (!startDateInput.value || !months) return;
     const d = new Date(startDateInput.value + 'T00:00:00');
@@ -166,8 +171,10 @@ if (Astro.request.method === 'POST') {
   }
 
   serviceTypeSelect.addEventListener('change', toggleDomainField);
+  startDateInput.addEventListener('input', calcExpiryDate);
   startDateInput.addEventListener('change', calcExpiryDate);
   periodSelect.addEventListener('change', calcExpiryDate);
 
   toggleDomainField();
+  calcExpiryDate();
 </script>

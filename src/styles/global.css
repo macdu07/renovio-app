@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   --bg-page: #fafbfc;
   --bg-surface: #ffffff;
   --text-main: rgba(0, 0, 0, 0.84);
@@ -19,6 +20,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg-page: #111214;
   --bg-surface: #1a1c1f;
   --text-main: rgba(255, 255, 255, 0.88);
