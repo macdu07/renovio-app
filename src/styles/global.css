@@ -1200,38 +1200,43 @@ h3 {
   .summary-strip {
     flex-wrap: wrap;
     gap: 0;
-    padding: 0.75rem 0;
+    padding: 0;
   }
 
   .summary-item {
     flex: 0 0 50%;
     border-right: none;
     margin-right: 0;
-    padding-right: 0;
-    padding: 0.75rem 0;
+    padding: 1.25rem 0;
     border-bottom: 1px solid var(--border);
   }
 
+  /* Left column: right padding + divider */
   .summary-item:nth-child(odd) {
-    padding-right: 1rem;
+    padding-right: 1.5rem;
     border-right: 1px solid var(--border);
   }
 
-  .summary-item:last-child,
-  .summary-item:nth-last-child(-n + 2):nth-child(odd):last-child {
-    border-bottom: none;
+  /* Right column: left padding */
+  .summary-item:nth-child(even) {
+    padding-left: 1.5rem;
   }
 
-  /* Remove bottom border from last two items */
-  .summary-strip .summary-item:nth-last-child(-n + 2) {
-    border-bottom: none;
-  }
-
-  /* Last item alone in its row: full width, no orphan border-right */
+  /* Last item in its own row (odd total count): full width, reset padding */
   .summary-strip .summary-item:last-child:nth-child(odd) {
     flex: 0 0 100%;
     border-right: none;
     padding-right: 0;
+    padding-left: 0;
+  }
+
+  /* No bottom border on the last row:
+     - last-child is always the final item
+     - nth-last-child(2):nth-child(odd) = second-to-last when count is even
+       (both sit in the same row, so both need no bottom border) */
+  .summary-strip .summary-item:last-child,
+  .summary-strip .summary-item:nth-last-child(2):nth-child(odd) {
+    border-bottom: none;
   }
 
   .summary-num {
