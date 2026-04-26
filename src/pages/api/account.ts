@@ -15,7 +15,7 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const dbUrl = process.env.DATABASE_URL || (import.meta as any).env?.DATABASE_URL;
 
   if (!dbUrl) {
-    return redirect('/login?error=Error+de+conexión+a+la+base+de+datos');
+    return redirect(`/login?error=${encodeURIComponent('Error de conexión a la base de datos')}`);
   }
 
   const sql = neon(dbUrl);
@@ -26,16 +26,16 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       const email = formData.get('email')?.toString().trim();
 
       if (!email) {
-        return redirect('/account?error=El+correo+es+requerido');
+        return redirect(`/account?error=${encodeURIComponent('El correo es requerido')}`);
       }
 
       const existing = await sql`SELECT id FROM users WHERE email = ${email} AND id != ${userId} LIMIT 1`;
       if (existing.length > 0) {
-        return redirect('/account?error=Ese+correo+ya+está+en+uso');
+        return redirect(`/account?error=${encodeURIComponent('Ese correo ya está en uso')}`);
       }
 
       await sql`UPDATE users SET name = ${name || null}, email = ${email} WHERE id = ${userId}`;
-      return redirect('/account?success=Datos+actualizados');
+      return redirect(`/account?success=${encodeURIComponent('Datos actualizados')}`);
 
     } else if (action === 'password') {
       const currentPassword = formData.get('current_password')?.toString();
@@ -43,37 +43,38 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
       const confirmPassword = formData.get('confirm_password')?.toString();
 
       if (!currentPassword || !newPassword || !confirmPassword) {
-        return redirect('/account?error=Todos+los+campos+de+contraseña+son+requeridos');
+        return redirect(`/account?error=${encodeURIComponent('Todos los campos de contraseña son requeridos')}`);
       }
 
       if (newPassword !== confirmPassword) {
-        return redirect('/account?error=Las+contraseñas+nuevas+no+coinciden');
+        return redirect(`/account?error=${encodeURIComponent('Las contraseñas nuevas no coinciden')}`);
       }
 
       if (newPassword.length < 8) {
-        return redirect('/account?error=La+contraseña+debe+tener+al+menos+8+caracteres');
+        return redirect(`/account?error=${encodeURIComponent('La contraseña debe tener al menos 8 caracteres')}`);
       }
 
       const result = await sql`SELECT password_hash FROM users WHERE id = ${userId} LIMIT 1`;
       if (result.length === 0) {
-        return redirect('/account?error=Usuario+no+encontrado');
+        return redirect(`/account?error=${encodeURIComponent('Usuario no encontrado')}`);
       }
 
       const { verifyPassword } = await import('../../lib/auth');
       const valid = await verifyPassword(currentPassword, result[0].password_hash);
       if (!valid) {
-        return redirect('/account?error=Contraseña+actual+incorrecta');
+        return redirect(`/account?error=${encodeURIComponent('Contraseña actual incorrecta')}`);
       }
 
       const newHash = await hashPassword(newPassword);
       await sql`UPDATE users SET password_hash = ${newHash} WHERE id = ${userId}`;
-      return redirect('/account?success=Contraseña+actualizada');
+      return redirect(`/account?success=${encodeURIComponent('Contraseña actualizada')}`);
 
     } else {
-      return redirect('/account?error=Acción+no+válida');
+      return redirect(`/account?error=${encodeURIComponent('Acción no válida')}`);
     }
   } catch (e) {
     console.error('Account update error:', e);
-    return redirect('/account?error=Error+al+guardar+los+cambios');
+    return redirect(`/account?error=${encodeURIComponent('Error al guardar los cambios')}`);
   }
 };
+
