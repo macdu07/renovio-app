@@ -422,7 +422,7 @@ h3 {
   font-family: var(--font-sans);
   font-size: 0.8rem;
   font-weight: 500;
-  padding: 8px 18px;
+  padding: 10px 18px;
   border-radius: 3px;
   cursor: pointer;
   transition: all 0.15s;
@@ -431,6 +431,7 @@ h3 {
   align-items: center;
   gap: 6px;
   text-decoration: none;
+  min-height: 40px;
 }
 
 .btn-primary {
@@ -503,12 +504,12 @@ h3 {
 .form-input {
   width: 100%;
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--text-main);
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--border-strong);
-  padding: 6px 0;
+  padding: 10px 0;
   outline: none;
   transition: border-color 0.15s;
   border-radius: 0;
@@ -524,12 +525,12 @@ h3 {
 .form-select {
   width: 100%;
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--text-main);
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--border-strong);
-  padding: 6px 0;
+  padding: 10px 0;
   outline: none;
   cursor: pointer;
   -webkit-appearance: none;
@@ -628,6 +629,20 @@ h3 {
   border-bottom: 1px solid var(--border);
   padding-bottom: 2rem;
   margin-bottom: 2rem;
+}
+
+.detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.detail-head-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  flex-shrink: 0;
 }
 
 .detail-meta {
@@ -1088,6 +1103,13 @@ h3 {
     font-size: 0.95rem;
   }
 
+  .nav-logout {
+    padding: 10px 4px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
   /* Mobile burger menu dropdown */
   .nav-links {
     position: absolute;
@@ -1136,11 +1158,18 @@ h3 {
 
   .burger-btn {
     display: flex;
+    width: 44px;
+    height: 44px;
+  }
+
+  .theme-toggle {
+    width: 44px;
+    height: 44px;
   }
 
   .nav-right {
-    gap: 1rem;
-    padding: 12px 0;
+    gap: 0.5rem;
+    padding: 8px 0;
   }
 
   /* Show icon instead of text for user link */
@@ -1198,6 +1227,13 @@ h3 {
     border-bottom: none;
   }
 
+  /* Last item alone in its row: full width, no orphan border-right */
+  .summary-strip .summary-item:last-child:nth-child(odd) {
+    flex: 0 0 100%;
+    border-right: none;
+    padding-right: 0;
+  }
+
   .summary-num {
     font-size: 1.35rem;
   }
@@ -1231,14 +1267,44 @@ h3 {
     gap: 0;
   }
 
+  .form-input,
+  .form-select {
+    font-size: 1rem;
+    padding: 12px 0;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    min-height: 44px;
+    padding: 10px 18px;
+  }
+
+  .btn-sm {
+    min-height: 40px;
+    padding: 8px 14px;
+  }
+
+  /* ── Detail page header ── */
+  .detail-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .detail-head-actions {
+    margin-top: 0;
+    flex-wrap: wrap;
+  }
+
   /* ── Overlay / modal ── */
   .overlay-bg {
     padding: 1rem;
+    padding-bottom: 0;
     align-items: flex-end;
   }
 
   .overlay-box {
-    padding: 1.75rem 1.25rem;
+    padding: 1.75rem 1.25rem calc(1.75rem + env(safe-area-inset-bottom, 0px));
     max-width: 100%;
     border-radius: 4px 4px 0 0;
   }
@@ -1275,7 +1341,7 @@ h3 {
 
   /* ── Toast ── */
   .toast {
-    bottom: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     width: calc(100% - 2rem);
     text-align: center;
   }

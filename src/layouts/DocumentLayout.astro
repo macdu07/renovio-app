@@ -155,16 +155,33 @@ function isActive(href: string): boolean {
     };
   }
 
+  let _burgerReady = false;
+
   function initBurgerMenu() {
+    if (_burgerReady) return;
     const btn = document.getElementById('burger-btn');
     const menu = document.getElementById('nav-links');
-    if (!btn || !menu) return;
-    
-    btn.onclick = () => {
-      const isExpanded = btn.getAttribute('aria-expanded') === 'true';
-      btn.setAttribute('aria-expanded', String(!isExpanded));
-      menu.classList.toggle('is-open');
-    };
+    const nav = btn?.closest('nav');
+    if (!btn || !menu || !nav) return;
+    _burgerReady = true;
+
+    function closeMenu() {
+      btn.setAttribute('aria-expanded', 'false');
+      menu.classList.remove('is-open');
+    }
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const opening = btn.getAttribute('aria-expanded') !== 'true';
+      btn.setAttribute('aria-expanded', String(opening));
+      menu.classList.toggle('is-open', opening);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (menu.classList.contains('is-open') && !nav.contains(e.target as Node)) {
+        closeMenu();
+      }
+    });
   }
 
   // Apply theme BEFORE the DOM swap so there's no flash or reset between pages

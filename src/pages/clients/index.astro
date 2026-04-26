@@ -45,9 +45,11 @@ const clientServiceSummary = allClients.map(c => {
 <Layout title="Clientes — Renovio">
   <div class="col">
     <div class="page-eyebrow">Directorio</div>
-    <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.3rem;">
+    <div class="detail-head" style="margin-bottom: 0.3rem;">
       <h1 class="page-title">Clientes</h1>
-      <a href="/clients/new" class="btn btn-primary" style="margin-top: 0.5rem;">+ Nuevo cliente</a>
+      <div class="detail-head-actions">
+        <a href="/clients/new" class="btn btn-primary">+ Nuevo cliente</a>
+      </div>
     </div>
     <p class="page-subtitle">{allClients.length} clientes registrados en la base de datos.</p>
 

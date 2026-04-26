@@ -78,9 +78,9 @@ function calcSparklinePct(days: number): number {
 
     <div class="detail-header">
       <div class="page-eyebrow">Ficha de cliente</div>
-      <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+      <div class="detail-head">
         <h1 class="page-title">{client?.companyName}</h1>
-        <div style="display: flex; gap: 0.5rem; margin-top: 0.4rem;">
+        <div class="detail-head-actions">
           <a href={`/services/new?clientId=${id}`} class="btn btn-ghost btn-sm">+ Servicio</a>
           <a href={`/clients/${id}/edit`} class="btn btn-ghost btn-sm">Editar</a>
           <form method="POST" action={`/clients/${id}/delete`} style="display: inline;">
