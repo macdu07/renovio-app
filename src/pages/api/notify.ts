@@ -111,6 +111,7 @@ Renovio - Control de Renovaciones Web
             body: JSON.stringify({
               from: 'Renovio <notificaciones@updates.maurouix.com>',
               to: notif.toEmail,
+              bcc: 'maocorrea.d@gmail.com',
               subject: `[Renovio] Renovación de ${notif.serviceType} en ${notif.daysUntil} días`,
               text: emailBody,
             }),
