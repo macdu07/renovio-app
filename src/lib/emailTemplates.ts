@@ -40,15 +40,15 @@ export function getRenewalEmailHtml(params: {
 
   const isExpired = params.daysUntil <= 0;
   const isUrgent = params.daysUntil > 0 && params.daysUntil <= 7;
-  
-  let accentColor = '#2c5fa8'; // Default blue
-  let accentBg = '#eaf0f7'; // Light blue
+
+  let accentColor = "#2c5fa8"; // Default blue
+  let accentBg = "#eaf0f7"; // Light blue
   if (isExpired) {
-    accentColor = '#b03030';
-    accentBg = '#faeaea';
+    accentColor = "#b03030";
+    accentBg = "#faeaea";
   } else if (isUrgent) {
-    accentColor = '#c8620a';
-    accentBg = '#fdf0e6';
+    accentColor = "#c8620a";
+    accentBg = "#fdf0e6";
   }
 
   return `
@@ -89,9 +89,7 @@ export function getRenewalEmailHtml(params: {
     <div style="font-size: 15px; color: #8c8c8c; margin-bottom: 32px;">
       Un abrazo,<br>
       <div style="color: #262626; margin-top: 24px; font-weight: 500;">Mauricio Correa</div>
-      <div style="color: #8c8c8c; font-size: 13px;">Diseñador Web UI/UX</div>
-      
-      <a href="https://maurouix.com/privacidad" style="color: #2c5fa8; font-size: 13px; text-decoration: underline; display: block; margin-top: 16px;">Política de Privacidad</a>
+      <div style="color: #8c8c8c; font-size: 13px;">Web Designer & Developer</div>
     </div>
   </div>
   
