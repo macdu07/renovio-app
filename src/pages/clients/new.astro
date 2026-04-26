@@ -152,10 +152,13 @@ if (Astro.request.method === 'POST') {
   </div>
 
   <script>
+  document.addEventListener('astro:page-load', () => {
     const existingContactSelect = document.getElementById('existingContact') as HTMLSelectElement;
     const newContactFields = document.getElementById('newContactFields') as HTMLDivElement;
     const nameInput = document.getElementById('name') as HTMLInputElement;
     const emailInput = document.getElementById('email') as HTMLInputElement;
+
+    if (!existingContactSelect) return;
 
     function toggleContactFields() {
       if (existingContactSelect && existingContactSelect.value) {
@@ -174,5 +177,6 @@ if (Astro.request.method === 'POST') {
       // Initialize on load
       toggleContactFields();
     }
-  </script>
+  });
+</script>
 </Layout>
