@@ -18,12 +18,14 @@ const PHONE_CODES = [
   { code: '+591', label: '+591 · Bolivia' },
   { code: '+595', label: '+595 · Paraguay' },
   { code: '+598', label: '+598 · Uruguay' },
+  { code: '+502', label: '+502 · Guatemala' },
+  { code: '+506', label: '+506 · Costa Rica' },
   { code: '+34',  label: '+34 · España' },
   { code: '+44',  label: '+44 · Reino Unido' },
 ];
 
 // Longest codes first to avoid prefix collisions
-const PARSE_ORDER = ['+593', '+595', '+591', '+598', '+57', '+52', '+54', '+56', '+51', '+58', '+34', '+44', '+1'];
+const PARSE_ORDER = ['+593', '+595', '+591', '+598', '+502', '+506', '+57', '+52', '+54', '+56', '+51', '+58', '+34', '+44', '+1'];
 
 const { id } = Astro.params;
 
