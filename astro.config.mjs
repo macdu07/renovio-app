@@ -39,6 +39,7 @@ export default defineConfig({
         ],
       },
       workbox: {
+        navigateFallback: null,
         // Never cache HTML — pages are SSR and must always come from the server
         globPatterns: ["**/*.{css,js,svg,png,ico,txt}"],
       },
