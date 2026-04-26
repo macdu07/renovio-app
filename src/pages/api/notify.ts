@@ -4,6 +4,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { services, clients, contacts, notificationLogs } from '../../db/schema';
 import { sql } from 'drizzle-orm';
 import { getEnvVar } from '../../lib/env';
+import { getRenewalEmailHtml } from '../../lib/emailTemplates';
 
 export const POST: APIRoute = async (context) => {
   const { request } = context;
@@ -28,6 +29,9 @@ export const POST: APIRoute = async (context) => {
       expiryDate: services.expiryDate,
       clientId: services.clientId,
       serviceType: services.serviceType,
+      domain: services.domain,
+      price: services.price,
+      currency: services.currency,
       clientName: clients.companyName,
       contactEmail: contacts.email,
       contactName: contacts.name,
@@ -45,6 +49,9 @@ export const POST: APIRoute = async (context) => {
       toEmail: string;
       toName: string;
       serviceType: string;
+      domain: string | null;
+      price: string | null;
+      currency: string | null;
       clientName: string;
       expiryDate: string;
       daysUntil: number;
@@ -76,6 +83,9 @@ export const POST: APIRoute = async (context) => {
           toEmail: svc.contactEmail,
           toName: svc.contactName || 'Cliente',
           serviceType: svc.serviceType,
+          domain: svc.domain,
+          price: svc.price,
+          currency: svc.currency,
           clientName: svc.clientName || 'Cliente',
           expiryDate: svc.expiryDate,
           daysUntil,
@@ -86,17 +96,15 @@ export const POST: APIRoute = async (context) => {
     const sentResults: Array<{ email: string; type: string; success: boolean }> = [];
 
     for (const notif of notifications) {
-      const emailBody = `Renovio - Notificación de Renovación
-
-Hola ${notif.toName},
-
-El servicio de ${notif.serviceType} para ${notif.clientName} vence en ${notif.daysUntil} días (${notif.expiryDate}).
-
-Por favor tome las medidas necesarias para la renovación.
-
---
-Renovio - Control de Renovaciones Web
-`;
+      const emailHtml = getRenewalEmailHtml({
+        toName: notif.toName,
+        serviceType: notif.serviceType,
+        domain: notif.domain,
+        expiryDate: notif.expiryDate,
+        daysUntil: notif.daysUntil,
+        price: notif.price,
+        currency: notif.currency,
+      });
 
       try {
         let success = false;
@@ -109,11 +117,11 @@ Renovio - Control de Renovaciones Web
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              from: 'Renovio <notificaciones@updates.maurouix.com>',
+              from: 'Mauricio Correa <notificaciones@updates.maurouix.com>',
               to: notif.toEmail,
               bcc: 'maocorrea.d@gmail.com',
-              subject: `[Renovio] Renovación de ${notif.serviceType} en ${notif.daysUntil} días`,
-              text: emailBody,
+              subject: `Renovación de ${notif.domain || notif.serviceType} en ${notif.daysUntil} días`,
+              html: emailHtml,
             }),
           });
           success = resendResponse.ok;
