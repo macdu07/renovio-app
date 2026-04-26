@@ -17,7 +17,7 @@ export function getRenewalEmailHtml(params: {
       style: "currency",
       currency: params.currency || "COP",
       minimumFractionDigits: 0,
-    }).format(numPrice);
+    }).format(numPrice) + ` ${params.currency || "COP"}`;
   }
 
   // Format date
