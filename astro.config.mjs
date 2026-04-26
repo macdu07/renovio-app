@@ -42,6 +42,19 @@ export default defineConfig({
         navigateFallback: null,
         // Never cache HTML — pages are SSR and must always come from the server
         globPatterns: ["**/*.{css,js,svg,png,ico,txt}"],
+        runtimeCaching: [
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+            },
+          },
+        ],
       },
       devOptions: {
         enabled: true,

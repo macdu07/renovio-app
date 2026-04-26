@@ -44,7 +44,7 @@ const errorMsg = url.searchParams.get('error');
     <!-- Profile section -->
     <section class="account-section">
       <div class="form-section-title">Perfil</div>
-      <form method="POST" action="/api/account" id="form-profile">
+      <form method="POST" action="/api/account" id="form-profile" data-astro-reload>
         <input type="hidden" name="action" value="profile" />
         <div class="form-field">
           <label class="form-label" for="name">Nombre</label>
@@ -81,7 +81,7 @@ const errorMsg = url.searchParams.get('error');
     <!-- Password section -->
     <section class="account-section">
       <div class="form-section-title">Contraseña</div>
-      <form method="POST" action="/api/account" id="form-password">
+      <form method="POST" action="/api/account" id="form-password" data-astro-reload>
         <input type="hidden" name="action" value="password" />
         <div class="form-field">
           <label class="form-label" for="current_password">Contraseña actual</label>
