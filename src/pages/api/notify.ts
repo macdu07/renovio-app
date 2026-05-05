@@ -4,7 +4,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { services, clients, contacts, notificationLogs } from '../../db/schema';
 import { sql } from 'drizzle-orm';
 import { getEnvVar } from '../../lib/env';
-import { getRenewalEmailHtml } from '../../lib/emailTemplates';
+import { getRenewalEmailHtml, getServiceTypeLabel } from '../../lib/emailTemplates';
 
 export const POST: APIRoute = async (context) => {
   const { request } = context;
@@ -120,7 +120,7 @@ export const POST: APIRoute = async (context) => {
               from: 'Mauricio Correa <notificaciones@updates.maurouix.com>',
               to: notif.toEmail,
               bcc: 'maocorrea.d@gmail.com',
-              subject: `Renovación de ${notif.domain || notif.serviceType} en ${notif.daysUntil} días`,
+              subject: `Renovación de ${notif.domain || getServiceTypeLabel(notif.serviceType)} en ${notif.daysUntil} días`,
               html: emailHtml,
             }),
           });

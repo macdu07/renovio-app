@@ -1,3 +1,20 @@
+export function getServiceTypeLabel(serviceType: string) {
+  const serviceTypeLabels: Record<string, string> = {
+    website: "sitio web",
+    hosting: "hosting",
+    domain: "dominio",
+    email: "correo electrónico",
+    ssl: "certificado SSL",
+    maintenance: "mantenimiento",
+  };
+
+  return serviceTypeLabels[serviceType] || "servicio";
+}
+
+function capitalizeFirst(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
 export function getRenewalEmailHtml(params: {
   toName: string;
   serviceType: string;
@@ -7,7 +24,11 @@ export function getRenewalEmailHtml(params: {
   price: string | null;
   currency: string | null;
 }) {
-  const serviceName = params.domain ? params.domain : params.serviceType;
+  const serviceTypeLabel = getServiceTypeLabel(params.serviceType);
+  const serviceTypeDisplayLabel = capitalizeFirst(serviceTypeLabel);
+  const serviceNameHtml = params.domain
+    ? ` <a href="https://${params.domain}" style="color: #2c5fa8; text-decoration: underline; font-weight: 500;">${params.domain}</a>`
+    : "";
 
   // Format price
   let formattedPrice = "Por definir";
@@ -61,15 +82,19 @@ export function getRenewalEmailHtml(params: {
 <body style="font-family: 'Inter', system-ui, -apple-system, sans-serif; color: #262626; line-height: 1.6; margin: 0; padding: 40px 20px; background-color: #fafbfc;">
   <div style="max-width: 520px; margin: 0 auto; background: #ffffff; padding: 40px; border: 1px solid #e6e6e6;">
     <div style="font-size: 24px; font-weight: 500; margin-bottom: 24px; color: #262626; letter-spacing: -0.02em;">
-      <span style="background-color: ${accentBg}; color: ${accentColor}; padding: 2px 6px; border-radius: 2px; font-weight: 500;">${titleWord}</span> de tu ${params.serviceType === "website" ? "sitio web" : "servicio"}
+      <span style="background-color: ${accentBg}; color: ${accentColor}; padding: 2px 6px; border-radius: 2px; font-weight: 500;">${titleWord}</span> de tu ${serviceTypeLabel}
     </div>
     
     <div style="font-size: 15px; color: #262626; margin-bottom: 24px;">
       Hola ${params.toName},<br><br>
-      Te escribo para recordarte que la <span style="color: ${accentColor}; font-weight: 600;">renovación</span> anual de tu servicio <a href="${params.domain ? "https://" + params.domain : "#"}" style="color: #2c5fa8; text-decoration: underline; font-weight: 500;">${serviceName}</a> ${actionWord} el <strong>${formattedDate}</strong>, es decir, en <strong>${params.daysUntil} días</strong>.
+      Te escribo para recordarte que la <span style="color: ${accentColor}; font-weight: 600;">renovación</span> anual de tu ${serviceTypeLabel}${serviceNameHtml} ${actionWord} el <strong>${formattedDate}</strong>, es decir, en <strong>${params.daysUntil} días</strong>.
     </div>
 
     <div style="border-top: 1px solid #e6e6e6; border-bottom: 1px solid #e6e6e6; padding: 20px 0; margin: 32px 0;">
+      <div style="margin-bottom: 24px;">
+        <span style="color: #8c8c8c; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; display: block; margin-bottom: 4px;">Tipo de servicio</span>
+        <span style="font-size: 18px; font-weight: 300; letter-spacing: -0.02em; display: block; color: #262626;">${serviceTypeDisplayLabel}</span>
+      </div>
       <div style="margin-bottom: 24px;">
         <span style="color: #8c8c8c; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; display: block; margin-bottom: 4px;">Monto de la renovación</span>
         <span style="font-size: 18px; font-weight: 300; letter-spacing: -0.02em; display: block; color: #262626;">${formattedPrice}</span>
