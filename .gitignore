@@ -16,9 +16,17 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+.env.local
+.env.*.local
 
 # macOS-specific files
 .DS_Store
 
 # jetbrains setting folder
 .idea/
+
+# Playwright snapshots
+.playwright-cli/
+
+# Dev service worker output
+dev-dist/
