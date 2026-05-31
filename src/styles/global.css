@@ -7,6 +7,8 @@
   --text-dim: rgba(0, 0, 0, 0.28);
   --border: rgba(0, 0, 0, 0.09);
   --border-strong: rgba(0, 0, 0, 0.18);
+  --bg-hover: rgba(0, 0, 0, 0.03);
+  --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(0,0,0,0.45)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
   --accent-blue: #2c5fa8;
   --accent-orange: #c8620a;
   --accent-red: #b03030;
@@ -28,6 +30,8 @@
   --text-dim: rgba(255, 255, 255, 0.28);
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.15);
+  --bg-hover: rgba(255, 255, 255, 0.04);
+  --select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.45)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
   --accent-blue: #5b8de8;
   --accent-orange: #e07a30;
   --accent-red: #d95555;
@@ -354,7 +358,7 @@ h3 {
 }
 
 .data-table tbody tr:hover td {
-  background: rgba(0, 0, 0, 0.025);
+  background: var(--bg-hover);
 }
 
 .data-table .col-right {
@@ -454,7 +458,7 @@ h3 {
 .btn-ghost:hover {
   color: var(--text-main);
   border-color: var(--border-strong);
-  background: rgba(0, 0, 0, 0.03);
+  background: var(--bg-hover);
 }
 
 .btn-link {
@@ -538,6 +542,10 @@ h3 {
   -webkit-appearance: none;
   appearance: none;
   border-radius: 0;
+  background-image: var(--select-chevron);
+  background-repeat: no-repeat;
+  background-position: right 0 center;
+  padding-right: 1.5rem;
 }
 
 .form-select:focus {
