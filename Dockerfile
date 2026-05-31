@@ -2,11 +2,14 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-COPY package*.json .npmrc ./
-RUN npm ci
+# Enable corepack and prepare pnpm
+RUN corepack enable && corepack prepare pnpm@11.2.2 --activate
+
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 # Production stage
 FROM node:22-alpine AS runner
